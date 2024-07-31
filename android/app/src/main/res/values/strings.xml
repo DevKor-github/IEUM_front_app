@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">IEUM_front_app</string>
+    <string name="kakao_app_key">219c7d8b2f2468171002937e3fc42c3b</string>
 </resources>
