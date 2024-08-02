@@ -44,8 +44,8 @@ const LoginScreen = ({navigation, route}: LoginScreenProps) => {
     const profile: KakaoProfile = await getKakaoProfile();
     const accessToken = token.accessToken;
     const id = profile.id;
-    // navigation.navigate('Home');
-    // navigation.navigate('Home', { accessToken: accessToken, id: id  })
+    navigation.navigate('PreferenceStart');
+    // navigation.navigate('PreferenceStart', { accessToken: accessToken, id: id  })
     return JSON.stringify(token);
   };
 
