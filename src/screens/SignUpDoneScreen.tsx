@@ -34,16 +34,6 @@ const SignUpDoneScreen = ({
             반갑습니다!
           </Text>
         </View>
-        <Text
-          style={{
-            paddingTop: 10,
-            fontSize: 14,
-            fontWeight: 400,
-            color: 'grey',
-            textAlign: 'center',
-          }}>
-          ????????
-        </Text>
         <View
           style={{
             position: 'absolute',

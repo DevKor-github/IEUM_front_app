@@ -8,8 +8,8 @@ import {
   Alert,
 } from 'react-native';
 import {StackScreenProps} from '@react-navigation/stack';
-import LoginLogo from '../assets/login-logo.svg';
-import MainText from '../assets/main-text.svg';
+import LoginLogo from '../assets/main-logo.svg';
+import MainText from '../assets/intro-text.svg';
 import KakaoLoginButton from '../assets/kakao-login.svg';
 import NaverLoginButton from '../assets/naver-login.svg';
 import AppleLoginButton from '../assets/apple-login.svg';
@@ -28,6 +28,7 @@ import NaverLogin, {
   GetProfileResponse,
 } from '@react-native-seoul/naver-login';
 import {appleAuth} from '@invertase/react-native-apple-authentication';
+import {API} from '../api/base';
 
 export type LoginScreenProps = StackScreenProps<RootStackParamList, 'Login'>;
 
@@ -121,22 +122,44 @@ const LoginScreen = ({navigation, route}: LoginScreenProps) => {
     }
   };
 
-  //apple
-  async function logInWithApple() {
-    const appleAuthRequestResponse = await appleAuth.performRequest({
-      requestedOperation: appleAuth.Operation.LOGIN,
-      requestedScopes: [appleAuth.Scope.FULL_NAME, appleAuth.Scope.EMAIL],
-    });
+  // apple
+  const logInWithApple = async () => {
+    try {
+      const appleAuthRequestResponse = await appleAuth.performRequest({
+        requestedOperation: appleAuth.Operation.LOGIN,
+        requestedScopes: [appleAuth.Scope.FULL_NAME, appleAuth.Scope.EMAIL],
+      });
 
-    const credentialState = await appleAuth.getCredentialStateForUser(
-      appleAuthRequestResponse.user,
-    );
+      const credentialState = await appleAuth.getCredentialStateForUser(
+        appleAuthRequestResponse.user,
+      );
 
-    if (credentialState === appleAuth.State.AUTHORIZED) {
-      // user is authenticated
+      if (credentialState === appleAuth.State.AUTHORIZED) {
+        const {user, email, fullName} = appleAuthRequestResponse;
+        const requestBody = {oAuthId: {user}, oAuthPlatform: 'Apple'};
+        const res = await API.post('/auth/login/social', requestBody);
+        if (res.status === 201) {
+          console.log('Apple 로그인 성공');
+        } else {
+          console.log('Apple 로그인 실패');
+        }
+
+        // .then(
+        //   console.log("Apple 로그인 성공");
+        // )
+        // .catch (
+        //   console.log("Apple 로그인 실패")
+        // )
+        // console.log('Apple 로그인 성공:', {user});
+
+        // 예시: 로그인 성공 후 이동
+        navigation.navigate('Home');
+      }
+    } catch (error) {
+      console.error('Apple 로그인 에러:', error);
+      Alert.alert('Apple 로그인 중 문제가 발생했습니다.');
     }
-  }
-
+  };
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
