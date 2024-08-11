@@ -1,14 +1,17 @@
 import {selector} from 'recoil';
 import placeAtom from './atom';
 import categoryAtom from '../category';
+import {Categories} from '../category/atom';
 
 const placeWithFilter = selector({
   key: 'placeWithFilter',
   get: ({get}) => {
-    const toDos = get(placeAtom);
+    const places = get(placeAtom);
     const category = get(categoryAtom);
 
-    return toDos.filter(todo => todo.category === category);
+    if (category === Categories.DEFAULT) return places;
+
+    return places.filter(place => place.category === category);
   },
 });
 

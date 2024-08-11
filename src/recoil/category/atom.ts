@@ -3,7 +3,10 @@ export enum Categories {
   'DEFAULT' = 'DEFAULT',
   'CAFE' = 'CAFE',
   'ALCOHOL' = 'ALCOHOL',
-  'FOOD' = 'FOOD',
+  'MUSEUM' = 'MUSEUM',
+  'STAY' = 'STAY',
+  'SHOPPING' = 'SHOPPING',
+  'OTHERS' = 'OTHERS',
 }
 
 const categoryAtom = atom<Categories>({
