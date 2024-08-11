@@ -14,4 +14,5 @@ export type RootStackParamList = {
   Home: undefined;
   LinkInput: undefined;
   LinkReject: undefined;
+  Map: undefined;
 };

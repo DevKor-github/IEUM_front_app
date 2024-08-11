@@ -1,7 +1,7 @@
 import React from 'react';
 import {Text, View} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import {createStackNavigator} from '@react-navigation/stack';
 import {RootStackParamList} from '../../types';
 import LoginScreen from '../screens/LoginScreen';
 import ServiceAgreementScreen from '../screens/ServiceAgreementScreen';
@@ -18,6 +18,7 @@ import InstagramFailScreen from '../screens/InstagramFailScreen';
 import HomeScreen from '../screens/HomeScreen';
 import LinkInputScreen from '../screens/LinkInputScreen';
 import LinkRejectScreen from '../screens/LinkRejectScreen';
+import MapScreen from '../screens/MapScreen';
 
 const RootStack = createStackNavigator<RootStackParamList>();
 
@@ -68,6 +69,7 @@ const StackNavigation = () => {
       <RootStack.Screen name="Home" component={HomeScreen} />
       <RootStack.Screen name="LinkInput" component={LinkInputScreen} />
       <RootStack.Screen name="LinkReject" component={LinkRejectScreen} />
+      <RootStack.Screen name="Map" component={MapScreen} />
     </RootStack.Navigator>
   );
 };

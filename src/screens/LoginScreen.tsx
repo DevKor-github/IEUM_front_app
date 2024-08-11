@@ -163,10 +163,13 @@ const LoginScreen = ({navigation, route}: LoginScreenProps) => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <View
-          style={{paddingTop: 17, paddingRight: 30, alignItems: 'flex-end'}}>
-          <Text style={{fontSize: 14, color: '#A4A4A4'}}>둘러보기</Text>
-        </View>
+        <Pressable onPress={() => navigation.navigate('Map')}>
+          <View
+            style={{paddingTop: 17, paddingRight: 30, alignItems: 'flex-end'}}>
+            <Text style={{fontSize: 14, color: '#A4A4A4'}}>둘러보기</Text>
+          </View>
+        </Pressable>
+
         <View style={styles.logoContainer}>
           <MainText style={styles.mainText} />
           <LoginLogo />
