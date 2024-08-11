@@ -1,5 +1,7 @@
 export type RootStackParamList = {
   Login: undefined;
+  ServiceAgreement: undefined;
+  ProfileSetting: undefined;
   PreferenceStart: undefined;
   PreferenceMBTI: undefined;
   PreferenceArea: undefined;
@@ -9,4 +11,7 @@ export type RootStackParamList = {
   InstagramConnect: undefined;
   InstagramFail: undefined;
   SignUpDone: undefined;
+  Home: undefined;
+  LinkInput: undefined;
+  LinkReject: undefined;
 };

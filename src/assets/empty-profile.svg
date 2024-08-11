@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 38 38" fill="none">
+  <circle cx="19" cy="19" r="19" fill="#FFC678"/>
+  <text 
+    x="50%" 
+    y="70%" 
+    text-anchor="middle" 
+    dominant-baseline="middle" 
+    font-size="21.172px" 
+    font-weight="600" 
+    fill="#FFF" 
+    line-height="28.582px">✼</text>
+</svg>

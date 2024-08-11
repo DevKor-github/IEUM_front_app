@@ -60,7 +60,7 @@ const PreferenceMBTIScreen = ({
     if (allGroupsSelected()) {
       navigation.navigate('PreferenceArea');
     } else {
-      Alert.alert('선택 완료', '모든 항목을 선택해 주세요.');
+      Alert.alert('선택 필요', '모든 항목을 선택해 주세요.');
     }
   };
 
