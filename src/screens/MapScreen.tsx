@@ -122,41 +122,35 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
   };
 
   return (
-    <GestureHandlerRootView>
-      <BottomSheetModalProvider>
-        <View style={styles.container}>
-          <NaverMapView
-            style={{flex: 1}}
-            isShowLocationButton={false}
-            isShowZoomControls={false}>
-            {filteredPlace.map((item: IPlace) => (
-              <NaverMapMarkerOverlay
-                key={item.id}
-                latitude={item.latitude}
-                longitude={item.longitude}
-                onTap={() => handleMarkerPress(item.id)}
-                anchor={{x: 0.5, y: 1}}
-                caption={{
-                  text: item.title,
-                }}
-                image={require('../assets/cafe-icon.png')}
-              />
-            ))}
-          </NaverMapView>
+    <View style={styles.container}>
+      <NaverMapView
+        style={{flex: 1}}
+        isShowLocationButton={false}
+        isShowZoomControls={false}>
+        {filteredPlace.map((item: IPlace) => (
+          <NaverMapMarkerOverlay
+            key={item.id}
+            latitude={item.latitude}
+            longitude={item.longitude}
+            onTap={() => handleMarkerPress(item.id)}
+            anchor={{x: 0.5, y: 1}}
+            caption={{
+              text: item.title,
+            }}
+            image={require('../assets/cafe-icon.png')}
+          />
+        ))}
+      </NaverMapView>
 
-          {renderFilterSection()}
-          {selectedMarkerIndex !== -1 &&
-            renderSummaryCard(
-              places.find(item => item.id === selectedMarkerIndex),
-            )}
-          <View style={styles.floatButtonContainer}>
-            <CircleButton onPress={handlePresentModalPress} icon={TabIcon} />
-          </View>
+      {renderFilterSection()}
+      {selectedMarkerIndex !== -1 &&
+        renderSummaryCard(places.find(item => item.id === selectedMarkerIndex))}
+      <View style={styles.floatButtonContainer}>
+        <CircleButton onPress={handlePresentModalPress} icon={TabIcon} />
+      </View>
 
-          <PlaceBottomSheet bottomSheetModalRef={bottomSheetModalRef} />
-        </View>
-      </BottomSheetModalProvider>
-    </GestureHandlerRootView>
+      <PlaceBottomSheet bottomSheetModalRef={bottomSheetModalRef} />
+    </View>
   );
 };
 const styles = StyleSheet.create({
