@@ -27,6 +27,7 @@ import CircleButton from '../component/CircleButton';
 import PlaceBottomSheet from '../component/PlaceBottomSheet';
 import {folderWithSelected} from '../recoil/folder';
 import FilterBottomSheet from '../component/FilterBottomSheet';
+import regionAtom from '../recoil/region';
 
 export type MapScreenProps = StackScreenProps<RootStackParamList, 'Map'>;
 
@@ -39,6 +40,7 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
   const selectedFolder = useRecoilValue(folderWithSelected);
 
   const [categories, setCategories] = useRecoilState(categoryAtom);
+  const regions = useRecoilValue(regionAtom);
 
   const [selectedMarkerIndex, setSelectedMarkerIndex] = useState(-1);
   const [isOpenFilterModal, setIsOpenFilterModal] = useState(false);
@@ -163,15 +165,15 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
             <CircleButton onPress={handlePresentModalPress} icon={TabIcon} />
           </View>
 
-          <View style={{zIndex: 0}}>
-            <PlaceBottomSheet bottomSheetModalRef={bottomSheetModalRef} />
-          </View>
+          <PlaceBottomSheet bottomSheetModalRef={bottomSheetModalRef} />
         </BottomSheetModalProvider>
 
         <FilterBottomSheet
           bottomSheetModalRef={filterBottomSheetModalRef}
           isOpenModal={isOpenFilterModal}
           onClose={() => setIsOpenFilterModal(false)}
+          selectedCategory={categories}
+          selectedRegion={regions}
         />
       </View>
     </>
@@ -207,8 +209,8 @@ const styles = StyleSheet.create({
   floatButtonContainer: {
     position: 'absolute',
     right: 24,
-    // bottom: 120, // todo 위치
-    bottom: 300, // todo 위치
+    bottom: 120, // todo 위치
+    // bottom: 300, // todo 위치
   },
 
   //placeCard
