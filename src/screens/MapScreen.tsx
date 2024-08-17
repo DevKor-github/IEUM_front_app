@@ -14,7 +14,7 @@ import {
   NaverMapView,
 } from '@mj-studio/react-native-naver-map';
 import {StackScreenProps} from '@react-navigation/stack';
-import {RootStackParamList} from '../../types';
+import {MapStackParamList} from '../../types';
 import {
   BottomSheetModal,
   BottomSheetModalProvider,
@@ -28,7 +28,7 @@ import LocationIcon from '../assets/location-icon.svg';
 import SaveFinIcon from '../assets/save-fin-icon.svg';
 import BookmarkIcon from '../assets/bookmark-icon.svg';
 
-export type MapScreenProps = StackScreenProps<RootStackParamList, 'Map'>;
+export type MapScreenProps = StackScreenProps<MapStackParamList, 'Map'>;
 
 const filters = [
   'FOOD',
