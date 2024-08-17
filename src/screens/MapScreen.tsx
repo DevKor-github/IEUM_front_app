@@ -83,17 +83,19 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.scrollViewContent}>
-          <SelectButton
-            index={-1}
-            isSelected={categories.length !== 0}
-            onPress={handlePresentFilterModalPress}
-            text={'필터'}
-            icon={categories.length !== 0 ? SelectedFilterIcon : FilterIcon}
-            selectedStyle={{
-              selectedButton: styles.selectedFilter,
-              selectedButtonText: styles.selectedFilterText,
-            }}
-          />
+          <View style={{marginRight: 4}}>
+            <SelectButton
+              index={-1}
+              isSelected={categories.length !== 0}
+              onPress={handlePresentFilterModalPress}
+              text={'필터'}
+              icon={categories.length !== 0 ? SelectedFilterIcon : FilterIcon}
+              selectedStyle={{
+                selectedButton: styles.selectedFilter,
+                selectedButtonText: styles.selectedFilterText,
+              }}
+            />
+          </View>
           {Object.values(Categories).map(item => (
             <SelectButton
               key={item}

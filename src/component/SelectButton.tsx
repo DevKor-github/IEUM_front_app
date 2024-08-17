@@ -41,15 +41,15 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     flexDirection: 'row',
     justifyContent: 'center',
+    textAlign: 'center',
     alignItems: 'center',
-    minHeight: 33,
+    height: 33,
     backgroundColor: '#FFFFFF',
-    paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 23,
     borderWidth: 0.8,
     borderColor: '#D9D9D9',
-    marginHorizontal: 6,
+    marginHorizontal: 3,
     marginVertical: 5,
     // ...Platform.select({
     //   ios: {

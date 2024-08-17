@@ -47,7 +47,6 @@ const PlaceList = (props: IPlaceList) => {
 const styles = StyleSheet.create({
   bottomSheetScrollViewContent: {
     paddingHorizontal: 24,
-    paddingTop: 10,
   },
   gridContainer: {
     flexDirection: 'row',
