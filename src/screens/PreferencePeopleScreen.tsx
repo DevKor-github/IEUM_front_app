@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import {StackScreenProps} from '@react-navigation/stack';
 import {RootStackParamList} from '../../types';
+import {useSetRecoilState} from 'recoil';
+import userInfoAtom from '../recoil/user/index';
 import BackButton from '../assets/back-button.svg';
 import ActiveIndex from '../assets/preference-activate.svg';
 import NotActiveIndex from '../assets/preference-deactivate.svg';
@@ -41,6 +43,8 @@ const PreferencePeopleScreen = ({
     new Set(),
   );
 
+  const setUserInfo = useSetRecoilState(userInfoAtom);
+
   const handlePress = (p: string) => {
     setSelectedPeople(prev => {
       const newSelectedPeople = new Set(prev);
@@ -53,13 +57,29 @@ const PreferencePeopleScreen = ({
     });
   };
 
+  const handleNextPress = () => {
+    const preferredCompanion = Array.from(selectedPeople).map(
+      name => name.split(' ')[1],
+    );
+
+    if (preferredCompanion.length > 0) {
+      setUserInfo(prevState => ({
+        ...prevState,
+        preferredCompanion: preferredCompanion,
+      }));
+      navigation.navigate('PreferenceDone');
+    } else {
+      Alert.alert('하나 이상의 동행을 선택해주세요.');
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <View style={styles.header}>
           <Pressable
             onPress={() => {
-              navigation.navigate('PreferenceStyle');
+              navigation.navigate('PreferenceStyle', route.params);
             }}>
             <BackButton style={styles.backButton} />
           </Pressable>
@@ -160,11 +180,7 @@ const PreferencePeopleScreen = ({
             alignItems: 'center',
             justifyContent: 'flex-end',
           }}>
-          <Pressable
-            onPress={() => {
-              navigation.navigate('PreferenceDone');
-            }}
-            style={styles.nextButton}>
+          <Pressable onPress={handleNextPress} style={styles.nextButton}>
             <Text style={styles.nextButtonText}>다음</Text>
           </Pressable>
         </View>
@@ -249,7 +265,7 @@ const styles = StyleSheet.create({
   buttonRow: {
     flexDirection: 'row',
     marginBottom: 15,
-    gap: 10
+    gap: 10,
   },
   button: {
     width: 103,

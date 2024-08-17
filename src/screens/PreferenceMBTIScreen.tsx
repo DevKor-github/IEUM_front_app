@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import {StackScreenProps} from '@react-navigation/stack';
 import {RootStackParamList} from '../../types';
+import {useSetRecoilState} from 'recoil';
+import userInfoAtom from '../recoil/user/index';
 import BackButton from '../assets/back-button.svg';
 import ActiveIndex from '../assets/preference-activate.svg';
 import NotActiveIndex from '../assets/preference-deactivate.svg';
@@ -38,6 +40,7 @@ const PreferenceMBTIScreen = ({
   navigation,
   route,
 }: PreferenceMBTIScreenProps) => {
+  const setUserInfo = useSetRecoilState(userInfoAtom);
   const [selectedGroup, setSelectedGroup] = React.useState<SelectedGroup>({
     E_I: null,
     N_S: null,
@@ -56,8 +59,21 @@ const PreferenceMBTIScreen = ({
     return Object.values(selectedGroup).every(value => value !== null);
   };
 
+  const getMBTIString = () => {
+    const {E_I, N_S, T_F, J_P} = selectedGroup;
+    if (E_I && N_S && T_F && J_P) {
+      return E_I + N_S + T_F + J_P;
+    }
+    return '';
+  };
+
   const handleNavigate = () => {
     if (allGroupsSelected()) {
+      const mbti = getMBTIString();
+      setUserInfo((prevState) => ({
+        ...prevState,
+        mbti: mbti
+      }));
       navigation.navigate('PreferenceArea');
     } else {
       Alert.alert('선택 필요', '모든 항목을 선택해 주세요.');
@@ -70,7 +86,7 @@ const PreferenceMBTIScreen = ({
         <View style={styles.header}>
           <Pressable
             onPress={() => {
-              navigation.navigate('PreferenceStart');
+              navigation.navigate('PreferenceStart', route.params);
             }}>
             <BackButton style={styles.backButton} />
           </Pressable>
