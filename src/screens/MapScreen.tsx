@@ -54,6 +54,7 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
   }, []);
 
   const handleFilterPress = (category: Categories) => {
+    setIsOpenFilterModal(false); // 혹시 모를 모달 열림 방지
     setCategories(prevCategories => {
       if (prevCategories.includes(category)) {
         return prevCategories.filter(item => item !== category);
