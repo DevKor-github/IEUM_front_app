@@ -18,6 +18,7 @@ import FilterIcon from '../assets/filter-icon.svg';
 import SelectedFilterIcon from '../assets/selected-filter-icon.svg';
 import BookmarkIcon from '../assets/bookmark-selected-icon.svg';
 import TabIcon from '../assets/tab-icon.svg';
+import CurrentLocationIcon from '../assets/current-location-icon.svg';
 import {useRecoilState, useRecoilValue} from 'recoil';
 import placeWithFilter from '../recoil/place/withFilter';
 import placeAtom, {IPlace} from '../recoil/place/atom';
@@ -43,6 +44,7 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
   const regions = useRecoilValue(regionAtom);
 
   const [selectedMarkerIndex, setSelectedMarkerIndex] = useState(-1);
+  const [isOpenModal, setIsOpenModal] = useState(true);
   const [isOpenFilterModal, setIsOpenFilterModal] = useState(false);
 
   const handlePresentFilterModalPress = useCallback(() => {
@@ -166,9 +168,18 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
             )}
           <View style={styles.floatButtonContainer}>
             <CircleButton onPress={handlePresentModalPress} icon={TabIcon} />
+            {!isOpenModal && (
+              <CircleButton
+                onPress={handlePresentModalPress}
+                icon={CurrentLocationIcon}
+              />
+            )}
           </View>
 
-          <PlaceBottomSheet bottomSheetModalRef={bottomSheetModalRef} />
+          <PlaceBottomSheet
+            bottomSheetModalRef={bottomSheetModalRef}
+            setIsModalOpen={setIsOpenModal}
+          />
         </BottomSheetModalProvider>
 
         <FilterBottomSheet
@@ -210,10 +221,13 @@ const styles = StyleSheet.create({
 
   // floatButtonContainer
   floatButtonContainer: {
+    display: 'flex',
+    flexDirection: 'column-reverse',
+    // height: 80,
+    gap: 11,
     position: 'absolute',
     right: 24,
     bottom: 120, // todo 위치
-    // bottom: 300, // todo 위치
   },
 
   //placeCard

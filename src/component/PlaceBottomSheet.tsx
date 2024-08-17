@@ -10,6 +10,7 @@ import LocationIcon from '../assets/location-icon.svg';
 import SaveFinIcon from '../assets/save-fin-icon.svg';
 import BookmarkIcon from '../assets/bookmark-icon.svg';
 import CloseIcon from '../assets/close-icon.svg';
+import CurrentLocationIcon from '../assets/current-location-icon.svg';
 
 import {BottomSheetModal, BottomSheetView} from '@gorhom/bottom-sheet';
 import React, {useCallback, useMemo, useState} from 'react';
@@ -32,6 +33,7 @@ import {Regions} from '../recoil/region/atom';
 
 export interface IPlaceBottomSheet {
   bottomSheetModalRef: React.RefObject<BottomSheetModal>;
+  setIsModalOpen: (open: boolean) => void;
 }
 
 type Mode = 'SAVED_PLACED' | 'FOLDER';
@@ -55,8 +57,10 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
   const handleSheetChanges = useCallback((index: number) => {
     if (index === -1) {
       setIsModalOpen(false); // Modal is closed
+      props.setIsModalOpen(false);
     } else {
       setIsModalOpen(true); // Modal is open
+      props.setIsModalOpen(true);
     }
   }, []);
 
@@ -192,6 +196,15 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
           <CircleButton
             onPress={() => setSelectedFolderIndex(null)}
             icon={CloseIcon}
+          />
+        </View>
+      )}
+
+      {isModalOpen && (
+        <View style={styles.floatCurrentLocationButtonContainer}>
+          <CircleButton
+            onPress={() => console.log('click')}
+            icon={CurrentLocationIcon}
           />
         </View>
       )}
@@ -349,8 +362,13 @@ const styles = StyleSheet.create({
   floatButtonContainer: {
     position: 'absolute',
     right: 24,
-    top: 80, // todo 위치
+    top: 80,
     zIndex: 9000,
+  },
+  floatCurrentLocationButtonContainer: {
+    position: 'absolute',
+    right: 24,
+    bottom: 230, // todo 위치
   },
 });
 
