@@ -19,6 +19,8 @@ import SelectedFilterIcon from '../assets/selected-filter-icon.svg';
 import BookmarkIcon from '../assets/bookmark-selected-icon.svg';
 import TabIcon from '../assets/tab-icon.svg';
 import CurrentLocationIcon from '../assets/current-location-icon.svg';
+import CloseIcon from '../assets/close-icon.svg';
+
 import {useRecoilState, useRecoilValue} from 'recoil';
 import placeWithFilter from '../recoil/place/withFilter';
 import placeAtom, {IPlace} from '../recoil/place/atom';
@@ -66,9 +68,12 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
   };
 
   const handleMarkerPress = (index: number) => {
+    let open = false;
     if (selectedMarkerIndex === index) {
       index = -1;
+      open = true;
     }
+    setIsOpenModal(open);
     setSelectedMarkerIndex(index);
   };
 
@@ -116,25 +121,33 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
     if (!placeInfo) return;
 
     return (
-      <View style={styles.placeCardContainer}>
-        <View style={styles.placeCard}>
-          <Image
-            // source={{uri: 'https://example.com/image.jpg'}}
-            source={require('../assets/test-place.png')}
-            style={styles.placeCardImage}
-          />
-          <View style={styles.placeCardContent}>
-            <View style={styles.bookmarkIcon}>
-              <BookmarkIcon />
+      <>
+        <View style={styles.placeCardContainer}>
+          <View style={styles.placeCardCloseButton}>
+            <CircleButton
+              onPress={() => handleMarkerPress(placeInfo?.id)}
+              icon={CloseIcon}
+            />
+          </View>
+          <View style={styles.placeCard}>
+            <Image
+              // source={{uri: 'https://example.com/image.jpg'}}
+              source={require('../assets/test-place.png')}
+              style={styles.placeCardImage}
+            />
+            <View style={styles.placeCardContent}>
+              <View style={styles.bookmarkIcon}>
+                <BookmarkIcon />
+              </View>
+              <Text style={styles.placeCardTitle}>{placeInfo.title}</Text>
+              <Text style={styles.placeCardLocation}>{placeInfo.location}</Text>
+              <Text style={styles.placeCardTags}>
+                {placeInfo.hashtag.map(item => '#' + item).join(' ')}
+              </Text>
             </View>
-            <Text style={styles.placeCardTitle}>{placeInfo.title}</Text>
-            <Text style={styles.placeCardLocation}>{placeInfo.location}</Text>
-            <Text style={styles.placeCardTags}>
-              {placeInfo.hashtag.map(item => '#' + item).join(' ')}
-            </Text>
           </View>
         </View>
-      </View>
+      </>
     );
   };
 
@@ -178,6 +191,7 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
 
           <PlaceBottomSheet
             bottomSheetModalRef={bottomSheetModalRef}
+            isModalOpen={isOpenModal}
             setIsModalOpen={setIsOpenModal}
           />
         </BottomSheetModalProvider>
@@ -234,8 +248,14 @@ const styles = StyleSheet.create({
   placeCardContainer: {
     position: 'absolute',
     bottom: 100,
-    width: '100%',
-    alignItems: 'center',
+    width: '95%',
+    // alignItems: 'center',
+    // alignContent: 'center',
+    // justifyContent: 'center',
+    zIndex: 9999,
+  },
+  placeCardCloseButton: {
+    marginLeft: 'auto',
   },
   placeCard: {
     flexDirection: 'row',

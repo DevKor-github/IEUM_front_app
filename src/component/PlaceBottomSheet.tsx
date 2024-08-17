@@ -13,7 +13,7 @@ import CloseIcon from '../assets/close-icon.svg';
 import CurrentLocationIcon from '../assets/current-location-icon.svg';
 
 import {BottomSheetModal, BottomSheetView} from '@gorhom/bottom-sheet';
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {IPlace} from '../recoil/place/atom';
 import {useRecoilValue, useSetRecoilState} from 'recoil';
 import placeWithFilter from '../recoil/place/withFilter';
@@ -33,12 +33,13 @@ import {Regions} from '../recoil/region/atom';
 
 export interface IPlaceBottomSheet {
   bottomSheetModalRef: React.RefObject<BottomSheetModal>;
+  isModalOpen: boolean;
   setIsModalOpen: (open: boolean) => void;
 }
 
 type Mode = 'SAVED_PLACED' | 'FOLDER';
 const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
-  const {bottomSheetModalRef} = props;
+  const {bottomSheetModalRef, isModalOpen, setIsModalOpen} = props;
   const filteredPlace: IPlace[] = useRecoilValue(placeWithFilter);
   const categories: Categories[] = useRecoilValue(categoryAtom);
   const regions: Regions[] = useRecoilValue(regionAtom);
@@ -48,7 +49,7 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
   const setSelectedFolderIndex = useSetRecoilState(selectedFolderAtom);
 
   const [mode, setMode] = useState<Mode>('SAVED_PLACED');
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // const [isModalOpen, setIsModalOpen] = useState(false);
 
   // variables
   const snapPoints = useMemo(() => ['25%', '80%'], []);
@@ -57,12 +58,20 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
   const handleSheetChanges = useCallback((index: number) => {
     if (index === -1) {
       setIsModalOpen(false); // Modal is closed
-      props.setIsModalOpen(false);
+      // props.setIsModalOpen(false);
     } else {
       setIsModalOpen(true); // Modal is open
-      props.setIsModalOpen(true);
+      // props.setIsModalOpen(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (props.isModalOpen) {
+      bottomSheetModalRef.current?.present();
+    } else {
+      bottomSheetModalRef.current?.close();
+    }
+  });
 
   const handleTabPress = (selectedMode: Mode) => {
     setMode(selectedMode);
