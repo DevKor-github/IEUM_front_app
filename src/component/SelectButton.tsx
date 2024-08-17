@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     textAlign: 'center',
-    fontWeight: 600,
+    fontWeight: '600',
     fontSize: 14,
   },
   selectedButton: {
