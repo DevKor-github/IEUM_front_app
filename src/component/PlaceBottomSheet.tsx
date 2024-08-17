@@ -9,11 +9,12 @@ import {
 import LocationIcon from '../assets/location-icon.svg';
 import SaveFinIcon from '../assets/save-fin-icon.svg';
 import BookmarkIcon from '../assets/bookmark-icon.svg';
+import CloseIcon from '../assets/close-icon.svg';
 
 import {BottomSheetModal, BottomSheetView} from '@gorhom/bottom-sheet';
 import React, {useCallback, useMemo, useState} from 'react';
 import {IPlace} from '../recoil/place/atom';
-import {useRecoilState, useRecoilValue} from 'recoil';
+import {useRecoilValue, useSetRecoilState} from 'recoil';
 import placeWithFilter from '../recoil/place/withFilter';
 import categoryAtom from '../recoil/category';
 import {Categories} from '../recoil/category/atom';
@@ -23,6 +24,9 @@ import folderAtom, {
 } from '../recoil/folder';
 import {IFolder} from '../recoil/folder/atom';
 import ShareButton from './ShareButton';
+import PlaceList from './PlaceList';
+import {placeWithFolder} from '../recoil/place';
+import CircleButton from './CircleButton';
 
 export interface IPlaceBottomSheet {
   bottomSheetModalRef: React.RefObject<BottomSheetModal>;
@@ -34,17 +38,23 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
   const filteredPlace: IPlace[] = useRecoilValue(placeWithFilter);
   const categories: Categories[] = useRecoilValue(categoryAtom);
   const folders: IFolder[] = useRecoilValue(folderAtom);
-  const [selectedFolderIndex, setSelectedFolderIndex] =
-    useRecoilState(selectedFolderAtom);
-  const selectedFolder: IFolder | null = useRecoilValue(folderWithSelected);
+  const selectedFolder = useRecoilValue(folderWithSelected);
+  const placeInFolder = useRecoilValue(placeWithFolder);
+  const setSelectedFolderIndex = useSetRecoilState(selectedFolderAtom);
 
   const [mode, setMode] = useState<Mode>('SAVED_PLACED');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   // variables
   const snapPoints = useMemo(() => ['25%', '80%'], []);
 
   // callbacks
   const handleSheetChanges = useCallback((index: number) => {
-    console.log('handleSheetChanges', index);
+    if (index === -1) {
+      setIsModalOpen(false); // Modal is closed
+    } else {
+      setIsModalOpen(true); // Modal is open
+    }
   }, []);
 
   const handleTabPress = (selectedMode: Mode) => {
@@ -52,13 +62,19 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
   };
 
   const renderTopSection = () => {
+    if (!selectedFolder) {
+      return renderMode();
+    }
+
     return (
       <View style={styles.topSectionContainer}>
         <View style={styles.topSectionInfo}>
-          <Text style={styles.topSectionTitle}>파일 이름</Text>
+          <Text style={styles.topSectionTitle}>{selectedFolder.title}</Text>
           <View style={styles.topSectionSubTitleContainer}>
             <BookmarkIcon />
-            <Text style={styles.topSectionSubTitle}>저장한 장소 · 38</Text>
+            <Text style={styles.topSectionSubTitle}>
+              저장한 장소 · {selectedFolder.totalCount}곳
+            </Text>
           </View>
         </View>
         <ShareButton />
@@ -93,6 +109,17 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
   };
 
   const renderContent = () => {
+    if (selectedFolder) {
+      return (
+        <PlaceList
+          placeList={placeInFolder}
+          onPress={index => {
+            console.log(index);
+          }}
+        />
+      );
+    }
+
     if (mode === 'SAVED_PLACED') {
       return renderSavedPlace();
     } else if (mode === 'FOLDER') {
@@ -102,27 +129,12 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
   };
 
   const renderSavedPlace = () => {
-    const renderItem = ({item}: {item: (typeof filteredPlace)[0]}) => (
-      <View style={styles.card}>
-        <Image
-          // source={{uri: item.imageUrl}}
-          source={require('../assets/test-place.png')}
-          style={styles.image}
-        />
-        <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.location}>{item.location}</Text>
-      </View>
-    );
-
     return (
-      <FlatList
-        data={filteredPlace}
-        renderItem={renderItem}
-        keyExtractor={item => 'place_' + item.id.toString()}
-        key={mode === 'SAVED_PLACED' ? 'two-columns' : 'one-column'} // key 값 변경으로 재렌더링 유도
-        contentContainerStyle={styles.bottomSheetScrollViewContent}
-        numColumns={2} // 2열 그리드 형식으로 표시
-        columnWrapperStyle={styles.gridContainer} // 열 사이 간격 조절
+      <PlaceList
+        placeList={filteredPlace}
+        onPress={index => {
+          console.log(index);
+        }}
       />
     );
   };
@@ -140,7 +152,7 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
             <View style={styles.itemSubtitleContainer}>
               <BookmarkIcon />
               <Text style={styles.itemSubtitle}>
-                저장한 장소 · {item.totalCount}
+                저장한 장소 · {item.totalCount}곳
               </Text>
             </View>
           </View>
@@ -160,19 +172,29 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
   };
 
   return (
-    <BottomSheetModal
-      ref={bottomSheetModalRef}
-      index={0}
-      snapPoints={snapPoints}
-      onChange={handleSheetChanges}>
-      <BottomSheetView style={styles.contentContainer}>
-        <View>
-          {renderMode()}
-          {renderTopSection()}
-          {renderContent()}
+    <>
+      {selectedFolder && isModalOpen && (
+        <View style={styles.floatButtonContainer}>
+          <CircleButton
+            onPress={() => setSelectedFolderIndex(null)}
+            icon={CloseIcon}
+          />
         </View>
-      </BottomSheetView>
-    </BottomSheetModal>
+      )}
+
+      <BottomSheetModal
+        ref={bottomSheetModalRef}
+        index={0}
+        snapPoints={snapPoints}
+        onChange={handleSheetChanges}>
+        <BottomSheetView style={styles.contentContainer}>
+          <View>
+            {renderTopSection()}
+            {renderContent()}
+          </View>
+        </BottomSheetView>
+      </BottomSheetModal>
+    </>
   );
 };
 
@@ -188,7 +210,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 24,
     backgroundColor: '#FFEAEE',
     borderRadius: 20,
-    marginBottom: 20,
+    marginTop: 10,
+    marginBottom: 16,
   },
   selectedTab: {
     borderRadius: 20,
@@ -263,13 +286,14 @@ const styles = StyleSheet.create({
   itemTitle: {
     fontSize: 16,
     fontWeight: '600',
+    marginBottom: 4,
   },
   itemSubtitleContainer: {
     display: 'flex',
     flexDirection: 'row',
   },
   itemSubtitle: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#888',
     marginLeft: 5,
   },
@@ -280,12 +304,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '90%',
     marginHorizontal: 24,
-    marginBottom: 20,
+    marginTop: 15,
+    marginBottom: 8,
   },
   topSectionInfo: {},
   topSectionTitle: {
     fontSize: 20,
-    fontWeight: 700,
+    fontWeight: '600',
+    marginBottom: 4,
   },
   topSectionSubTitleContainer: {
     display: 'flex',
@@ -293,9 +319,15 @@ const styles = StyleSheet.create({
   },
   topSectionSubTitle: {
     fontSize: 14,
-    fontWeight: 400,
+    fontWeight: '400',
     color: '#A4A4A4',
     marginLeft: 5,
+  },
+
+  floatButtonContainer: {
+    position: 'absolute',
+    right: 24,
+    top: 80, // todo 위치
   },
 });
 

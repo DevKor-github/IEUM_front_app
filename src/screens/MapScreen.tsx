@@ -14,7 +14,6 @@ import {StackScreenProps} from '@react-navigation/stack';
 import {RootStackParamList} from '../../types';
 import {BottomSheetModal, BottomSheetModalProvider} from '@gorhom/bottom-sheet';
 import {useCallback, useEffect, useRef, useState} from 'react';
-import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import FilterIcon from '../assets/filter-icon.svg';
 import SelectedFilterIcon from '../assets/selected-filter-icon.svg';
 import BookmarkIcon from '../assets/bookmark-selected-icon.svg';
@@ -26,17 +25,27 @@ import SelectButton from '../component/SelectButton';
 import categoryAtom, {Categories} from '../recoil/category/atom';
 import CircleButton from '../component/CircleButton';
 import PlaceBottomSheet from '../component/PlaceBottomSheet';
+import {folderWithSelected} from '../recoil/folder';
+import FilterBottomSheet from '../component/FilterBottomSheet';
 
 export type MapScreenProps = StackScreenProps<RootStackParamList, 'Map'>;
 
 const MapScreen = ({navigation, route}: MapScreenProps) => {
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+  const filterBottomSheetModalRef = useRef<BottomSheetModal>(null);
 
   const places: IPlace[] = useRecoilValue(placeAtom);
   const filteredPlace: IPlace[] = useRecoilValue(placeWithFilter);
+  const selectedFolder = useRecoilValue(folderWithSelected);
+
   const [categories, setCategories] = useRecoilState(categoryAtom);
 
   const [selectedMarkerIndex, setSelectedMarkerIndex] = useState(-1);
+  const [isOpenFilterModal, setIsOpenFilterModal] = useState(false);
+
+  const handlePresentFilterModalPress = useCallback(() => {
+    setIsOpenFilterModal(true);
+  }, []);
 
   const handlePresentModalPress = useCallback(() => {
     bottomSheetModalRef.current?.present();
@@ -60,10 +69,11 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
 
   useEffect(() => {
     if (!bottomSheetModalRef.current) return;
-    // bottomSheetModalRef.current.present();
+    bottomSheetModalRef.current?.present();
   }, [bottomSheetModalRef]);
 
   const renderFilterSection = () => {
+    if (selectedFolder) return;
     return (
       <View style={styles.filterContainer}>
         <ScrollView
@@ -73,7 +83,7 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
           <SelectButton
             index={-1}
             isSelected={categories.length !== 0}
-            onPress={() => {}}
+            onPress={handlePresentFilterModalPress}
             text={'필터'}
             icon={categories.length !== 0 ? SelectedFilterIcon : FilterIcon}
             selectedStyle={{
@@ -122,35 +132,49 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
   };
 
   return (
-    <View style={styles.container}>
-      <NaverMapView
-        style={{flex: 1}}
-        isShowLocationButton={false}
-        isShowZoomControls={false}>
-        {filteredPlace.map((item: IPlace) => (
-          <NaverMapMarkerOverlay
-            key={item.id}
-            latitude={item.latitude}
-            longitude={item.longitude}
-            onTap={() => handleMarkerPress(item.id)}
-            anchor={{x: 0.5, y: 1}}
-            caption={{
-              text: item.title,
-            }}
-            image={require('../assets/cafe-icon.png')}
-          />
-        ))}
-      </NaverMapView>
+    <>
+      <View style={styles.container}>
+        <BottomSheetModalProvider>
+          <NaverMapView
+            style={{flex: 1}}
+            isShowLocationButton={false}
+            isShowZoomControls={false}>
+            {filteredPlace.map((item: IPlace) => (
+              <NaverMapMarkerOverlay
+                key={item.id}
+                latitude={item.latitude}
+                longitude={item.longitude}
+                onTap={() => handleMarkerPress(item.id)}
+                anchor={{x: 0.5, y: 1}}
+                caption={{
+                  text: item.title,
+                }}
+                image={require('../assets/cafe-icon.png')}
+              />
+            ))}
+          </NaverMapView>
 
-      {renderFilterSection()}
-      {selectedMarkerIndex !== -1 &&
-        renderSummaryCard(places.find(item => item.id === selectedMarkerIndex))}
-      <View style={styles.floatButtonContainer}>
-        <CircleButton onPress={handlePresentModalPress} icon={TabIcon} />
+          {renderFilterSection()}
+          {selectedMarkerIndex !== -1 &&
+            renderSummaryCard(
+              places.find(item => item.id === selectedMarkerIndex),
+            )}
+          <View style={styles.floatButtonContainer}>
+            <CircleButton onPress={handlePresentModalPress} icon={TabIcon} />
+          </View>
+
+          <View style={{zIndex: 0}}>
+            <PlaceBottomSheet bottomSheetModalRef={bottomSheetModalRef} />
+          </View>
+        </BottomSheetModalProvider>
+
+        <FilterBottomSheet
+          bottomSheetModalRef={filterBottomSheetModalRef}
+          isOpenModal={isOpenFilterModal}
+          onClose={() => setIsOpenFilterModal(false)}
+        />
       </View>
-
-      <PlaceBottomSheet bottomSheetModalRef={bottomSheetModalRef} />
-    </View>
+    </>
   );
 };
 const styles = StyleSheet.create({
@@ -183,7 +207,8 @@ const styles = StyleSheet.create({
   floatButtonContainer: {
     position: 'absolute',
     right: 24,
-    bottom: 120, // todo 위치
+    // bottom: 120, // todo 위치
+    bottom: 300, // todo 위치
   },
 
   //placeCard
