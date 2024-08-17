@@ -12,7 +12,7 @@ import BookmarkIcon from '../assets/bookmark-icon.svg';
 import CloseIcon from '../assets/close-icon.svg';
 
 import {BottomSheetModal, BottomSheetView} from '@gorhom/bottom-sheet';
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {IPlace} from '../recoil/place/atom';
 import {useRecoilValue, useSetRecoilState} from 'recoil';
 import placeWithFilter from '../recoil/place/withFilter';
@@ -27,6 +27,8 @@ import ShareButton from './ShareButton';
 import PlaceList from './PlaceList';
 import {placeWithFolder} from '../recoil/place';
 import CircleButton from './CircleButton';
+import regionAtom from '../recoil/region';
+import {Regions} from '../recoil/region/atom';
 
 export interface IPlaceBottomSheet {
   bottomSheetModalRef: React.RefObject<BottomSheetModal>;
@@ -37,6 +39,7 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
   const {bottomSheetModalRef} = props;
   const filteredPlace: IPlace[] = useRecoilValue(placeWithFilter);
   const categories: Categories[] = useRecoilValue(categoryAtom);
+  const regions: Regions[] = useRecoilValue(regionAtom);
   const folders: IFolder[] = useRecoilValue(folderAtom);
   const selectedFolder = useRecoilValue(folderWithSelected);
   const placeInFolder = useRecoilValue(placeWithFolder);
@@ -62,6 +65,21 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
   };
 
   const renderTopSection = () => {
+    if (categories.length > 0 || regions.length > 0) {
+      return (
+        <View style={styles.filteredTopSectionContainer}>
+          <View style={styles.topSectionInfo}>
+            <View style={styles.topSectionSubTitleContainer}>
+              <BookmarkIcon />
+              <Text style={styles.topSectionSubTitle}>
+                저장한 장소 · {filteredPlace.length}곳
+              </Text>
+            </View>
+          </View>
+        </View>
+      );
+    }
+
     if (!selectedFolder) {
       return renderMode();
     }
@@ -83,10 +101,6 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
   };
 
   const renderMode = () => {
-    if (categories.length > 0) {
-      return null;
-    }
-
     return (
       <View style={styles.tabContainer}>
         <TouchableOpacity
@@ -297,7 +311,15 @@ const styles = StyleSheet.create({
     color: '#888',
     marginLeft: 5,
   },
-
+  filteredTopSectionContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    width: '90%',
+    marginHorizontal: 24,
+    marginTop: 15,
+    marginBottom: 8,
+  },
   topSectionContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
