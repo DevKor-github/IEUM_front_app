@@ -38,11 +38,11 @@ const SelectButton = (props: ISelectButtonProps) => {
 
 const styles = StyleSheet.create({
   button: {
-    flex: 1,
+    alignSelf: 'flex-start',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    height: 33,
+    minHeight: 33,
     backgroundColor: '#FFFFFF',
     paddingVertical: 8,
     paddingHorizontal: 14,
@@ -50,28 +50,30 @@ const styles = StyleSheet.create({
     borderWidth: 0.8,
     borderColor: '#D9D9D9',
     marginHorizontal: 6,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: {width: 0, height: 1},
-        shadowOpacity: 0.1,
-        shadowRadius: 10,
-      },
-      android: {
-        elevation: 5,
-      },
-    }),
+    marginVertical: 5,
+    // ...Platform.select({
+    //   ios: {
+    //     shadowColor: '#000',
+    //     shadowOffset: {width: 0, height: 1},
+    //     shadowOpacity: 0.1,
+    //     shadowRadius: 10,
+    //   },
+    //   android: {
+    //     elevation: 5,
+    //   },
+    // }),
   },
   buttonText: {
     textAlign: 'center',
-    fontWeight: '600',
+    fontWeight: '500',
     fontSize: 14,
   },
   selectedButton: {
-    backgroundColor: '#FF5570',
+    borderColor: '#FF5570',
+    backgroundColor: '#FFEEF0',
   },
   selectedButtonText: {
-    color: '#FFFFFF',
+    color: '#FF5570',
   },
   icon: {
     marginRight: 5,

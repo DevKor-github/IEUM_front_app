@@ -1,9 +1,11 @@
 import {atom} from 'recoil';
 import {Categories} from '../category/atom';
+import {Regions} from '../region/atom';
 
 export interface IPlace {
   id: number;
   category: Categories;
+  region: Regions;
   title: string;
   location: string;
   imageUrl: string;
@@ -17,6 +19,7 @@ const placeAtom = atom<IPlace[]>({
     {
       id: 1,
       category: Categories.CAFE,
+      region: Regions.SEOUL,
       title: '장소 이름',
       location: '제주 서귀포시 | CAFE',
       imageUrl: 'https://example.com/image1.jpg',
@@ -27,6 +30,7 @@ const placeAtom = atom<IPlace[]>({
     {
       id: 2,
       category: Categories.CAFE,
+      region: Regions.SEOUL,
       title: '장소 이름',
       location: '제주 서귀포시 | CAFE',
       imageUrl: 'https://example.com/image2.jpg',
@@ -37,6 +41,7 @@ const placeAtom = atom<IPlace[]>({
     {
       id: 3,
       category: Categories.CAFE,
+      region: Regions.SEOUL,
       title: '장소 이름',
       location: '제주 서귀포시 | CAFE',
       imageUrl: 'https://example.com/image3.jpg',
@@ -47,6 +52,7 @@ const placeAtom = atom<IPlace[]>({
     {
       id: 4,
       category: Categories.CAFE,
+      region: Regions.SEOUL,
       title: '장소 이름',
       location: '제주 서귀포시 | CAFE',
       imageUrl: 'https://example.com/image4.jpg',

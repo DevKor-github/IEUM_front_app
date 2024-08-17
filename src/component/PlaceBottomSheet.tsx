@@ -12,7 +12,7 @@ import BookmarkIcon from '../assets/bookmark-icon.svg';
 import CloseIcon from '../assets/close-icon.svg';
 
 import {BottomSheetModal, BottomSheetView} from '@gorhom/bottom-sheet';
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {IPlace} from '../recoil/place/atom';
 import {useRecoilValue, useSetRecoilState} from 'recoil';
 import placeWithFilter from '../recoil/place/withFilter';
@@ -328,6 +328,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 24,
     top: 80, // todo 위치
+    zIndex: 9000,
   },
 });
 

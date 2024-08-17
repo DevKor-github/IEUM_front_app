@@ -1,5 +1,6 @@
 import {atom} from 'recoil';
 export enum Categories {
+  'FOOD' = 'FOOD',
   'CAFE' = 'CAFE',
   'ALCOHOL' = 'ALCOHOL',
   'MUSEUM' = 'MUSEUM',
@@ -10,7 +11,7 @@ export enum Categories {
 
 const categoryAtom = atom<Categories[]>({
   key: 'categoryAtom',
-  default: [], // todo category list로 변경
+  default: [],
 });
 
 // export default 사용, atom만 익스포트
