@@ -1,5 +1,5 @@
 import axios from 'axios';
-export const API_URL = 'https://api.ieum.devkor.club/';
+export const API_URL = 'https://dev.api.ieum.devkor.club/';
 
 /* axios 공통 config */
 export const API = axios.create({

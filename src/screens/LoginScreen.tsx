@@ -29,6 +29,7 @@ import NaverLogin, {
 } from '@react-native-seoul/naver-login';
 import {appleAuth} from '@invertase/react-native-apple-authentication';
 import {API} from '../api/base';
+import EncryptedStorage from 'react-native-encrypted-storage';
 
 export type LoginScreenProps = StackScreenProps<RootStackParamList, 'Login'>;
 
@@ -45,8 +46,29 @@ const LoginScreen = ({navigation, route}: LoginScreenProps) => {
     const profile: KakaoProfile = await getKakaoProfile();
     const accessToken = token.accessToken;
     const id = profile.id;
-    navigation.navigate('PreferenceStart');
-    // navigation.navigate('PreferenceStart', { accessToken: accessToken, id: id  })
+    const requestBody = {
+      oAuthToken: accessToken,
+      oAuthPlatform: 'Kakao',
+    };
+
+    const res = await API.post('/auth/login/social', requestBody);
+
+    if (res.status === 201) {
+      console.log('Kakao 로그인 성공');
+      await EncryptedStorage.setItem('uuid', res.data.response.uuid);
+      await EncryptedStorage.setItem(
+        'accessToken',
+        res.data.response.accessToken,
+      );
+      await EncryptedStorage.setItem(
+        'refreshToken',
+        res.data.response.refreshToken,
+      );
+      navigation.navigate('Home');
+    } else {
+      console.log('Kakao 로그인 실패');
+      Alert.alert('Kakao 로그인 중 문제가 발생했습니다.');
+    }
     return JSON.stringify(token);
   };
 
@@ -89,6 +111,29 @@ const LoginScreen = ({navigation, route}: LoginScreenProps) => {
     const {failureResponse, successResponse} = await NaverLogin.login();
     setSuccessResponse(successResponse);
     setFailureResponse(failureResponse);
+    const requestBody = {
+      oAuthToken: successResponse?.accessToken,
+      oAuthPlatform: 'Naver',
+    };
+
+    const res = await API.post('/auth/login/social', requestBody);
+
+    if (res.status === 201) {
+      console.log('Naver 로그인 성공');
+      await EncryptedStorage.setItem('uuid', res.data.response.uuid);
+      await EncryptedStorage.setItem(
+        'accessToken',
+        res.data.response.accessToken,
+      );
+      await EncryptedStorage.setItem(
+        'refreshToken',
+        res.data.response.refreshToken,
+      );
+      navigation.navigate('Home');
+    } else {
+      console.log('Naver 로그인 실패');
+      Alert.alert('Naver 로그인 중 문제가 발생했습니다.');
+    }
   };
 
   const logOutWithNaver = async () => {
@@ -135,38 +180,54 @@ const LoginScreen = ({navigation, route}: LoginScreenProps) => {
       );
 
       if (credentialState === appleAuth.State.AUTHORIZED) {
-        const {user, email, fullName} = appleAuthRequestResponse;
-        const requestBody = {oAuthId: {user}, oAuthPlatform: 'Apple'};
-        const res = await API.post('/auth/login/social', requestBody);
+        const {user, email, fullName, identityToken} = appleAuthRequestResponse;
+        const requestBody = {
+          oAuthToken: identityToken,
+          oAuthPlatform: 'Apple',
+        };
+
+        const res = await API.post('/auth/login/social', requestBody, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
         if (res.status === 201) {
           console.log('Apple 로그인 성공');
+          await EncryptedStorage.setItem('uuid', res.data.response.uuid);
+          await EncryptedStorage.setItem(
+            'accessToken',
+            res.data.response.accessToken,
+          );
+          await EncryptedStorage.setItem(
+            'refreshToken',
+            res.data.response.refreshToken,
+          );
+          navigation.navigate('Home');
         } else {
           console.log('Apple 로그인 실패');
+          Alert.alert('Apple 로그인 중 문제가 발생했습니다.');
         }
-
-        // .then(
-        //   console.log("Apple 로그인 성공");
-        // )
-        // .catch (
-        //   console.log("Apple 로그인 실패")
-        // )
-        // console.log('Apple 로그인 성공:', {user});
-
-        // 예시: 로그인 성공 후 이동
-        navigation.navigate('Home');
+      } else {
+        console.log('id_token을 가져올 수 없습니다.');
+        Alert.alert('Apple 로그인 중 문제가 발생했습니다.');
       }
     } catch (error) {
       console.error('Apple 로그인 에러:', error);
       Alert.alert('Apple 로그인 중 문제가 발생했습니다.');
     }
   };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <View
-          style={{paddingTop: 17, paddingRight: 30, alignItems: 'flex-end'}}>
-          <Text style={{fontSize: 14, color: '#A4A4A4'}}>둘러보기</Text>
-        </View>
+        <Pressable onPress={() => {}}>
+          <View
+            style={{paddingTop: 17, paddingRight: 30, alignItems: 'flex-end'}}>
+            <Text style={{fontSize: 14, color: '#A4A4A4'}}>둘러보기</Text>
+          </View>
+        </Pressable>
+
         <View style={styles.logoContainer}>
           <MainText style={styles.mainText} />
           <LoginLogo />

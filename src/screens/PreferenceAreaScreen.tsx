@@ -9,6 +9,8 @@ import {
 } from 'react-native';
 import {StackScreenProps} from '@react-navigation/stack';
 import {RootStackParamList} from '../../types';
+import {useSetRecoilState} from 'recoil';
+import userInfoAtom from '../recoil/user/index';
 import BackButton from '../assets/back-button.svg';
 import ActiveIndex from '../assets/preference-activate.svg';
 import NotActiveIndex from '../assets/preference-deactivate.svg';
@@ -42,6 +44,8 @@ const PreferenceAreaScreen = ({
     new Set(),
   );
 
+  const setUserInfo = useSetRecoilState(userInfoAtom);
+
   const handlePress = (area: string) => {
     setSelectedAreas(prev => {
       const newSelectedAreas = new Set(prev);
@@ -54,13 +58,31 @@ const PreferenceAreaScreen = ({
     });
   };
 
+  const generateFinalList = () => {
+    const preferredRegion: string[] = [];
+    selectedAreas.forEach(areaName => {
+      const area = areas.find(a => a.name === areaName);
+      if (area) {
+        const mainAreas = area.name.split('/');
+        const subAreas = area.subText.split('/');
+
+        mainAreas.forEach(mainArea => {
+          subAreas.forEach(subArea => {
+            preferredRegion.push(`${mainArea.trim()}, ${subArea.trim()}`);
+          });
+        });
+      }
+    });
+    return preferredRegion;
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <View style={styles.header}>
           <Pressable
             onPress={() => {
-              navigation.navigate('PreferenceMBTI');
+              navigation.navigate('PreferenceMBTI', route.params);
             }}>
             <BackButton style={styles.backButton} />
           </Pressable>
@@ -128,6 +150,11 @@ const PreferenceAreaScreen = ({
           }}>
           <Pressable
             onPress={() => {
+              const preferredRegion = generateFinalList();
+              setUserInfo((prevState) => ({
+                ...prevState,
+                preferredRegion: preferredRegion
+              }));
               navigation.navigate('PreferenceStyle');
             }}
             style={styles.nextButton}>

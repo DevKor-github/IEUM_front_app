@@ -9,11 +9,11 @@ import {
   Dimensions,
 } from 'react-native';
 import {StackScreenProps} from '@react-navigation/stack';
-import {RootStackParamList} from '../../types';
+import {HomeStackParamList} from '../../types';
 import LinkRejectLogo from '../assets/link-reject-logo.svg';
 
 export type LinkRejectScreenProps = StackScreenProps<
-  RootStackParamList,
+  HomeStackParamList,
   'LinkReject'
 >;
 

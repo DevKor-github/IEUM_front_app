@@ -22,6 +22,8 @@ import StyleGraphMiddle from '../assets/style-graph-middle.svg';
 import ActiveStyleGraphMiddle from '../assets/active-style-graph-middle.svg';
 import StyleGraphRightEnd from '../assets/style-graph-right-end.svg';
 import ActiveStyleGraphRightEnd from '../assets/active-style-graph-right-end.svg';
+import {useSetRecoilState} from 'recoil';
+import userInfoAtom from '../recoil/user/index';
 
 export type PreferenceStyleScreenProps = StackScreenProps<
   RootStackParamList,
@@ -35,18 +37,16 @@ const PreferenceStyleScreen = ({
   navigation,
   route,
 }: PreferenceStyleScreenProps) => {
-  const [selectedIndexes, setSelectedIndexes] = React.useState<
-    Array<number | null>
-  >(Array(6).fill(null));
+  const [selectedIndexes, setSelectedIndexes] = React.useState<Array<number>>(
+    Array(6).fill(-1),
+  ); 
+
+  const setUserInfo = useSetRecoilState(userInfoAtom);
 
   const handlePress = (questionIndex: number, answerIndex: number) => {
     setSelectedIndexes(prevIndexes =>
       prevIndexes.map((index, i) =>
-        i === questionIndex
-          ? index === answerIndex
-            ? null
-            : answerIndex
-          : index,
+        i === questionIndex ? (index === answerIndex ? 0 : answerIndex) : index,
       ),
     );
   };
@@ -54,6 +54,29 @@ const PreferenceStyleScreen = ({
   const handleNextPress = () => {
     const allQuestionsAnswered = selectedIndexes.every(index => index !== null);
     if (allQuestionsAnswered) {
+      const scheduleStyle =
+        selectedIndexes[0] !== 0 ? selectedIndexes[0]! + 1 : 0;
+      const destinationStyle1 =
+        selectedIndexes[1] !== 0 ? selectedIndexes[1]! + 1 : 0;
+      const destinationStyle2 =
+        selectedIndexes[2] !== 0 ? selectedIndexes[2]! + 1 : 0;
+      const destinationStyle3 =
+        selectedIndexes[3] !== 0 ? selectedIndexes[3]! + 1 : 0;
+      const planningStyle =
+        selectedIndexes[4] !== 0 ? selectedIndexes[4]! + 1 : 0;
+      const budgetStyle =
+        selectedIndexes[5] !== 0 ? selectedIndexes[5]! + 1 : 0;
+
+      setUserInfo(prevState => ({
+        ...prevState,
+        budgetStyle: budgetStyle,
+        planningStyle: planningStyle,
+        scheduleStyle: scheduleStyle,
+        destinationStyle1: destinationStyle1,
+        destinationStyle2: destinationStyle2,
+        destinationStyle3: destinationStyle3,
+      }));
+
       navigation.navigate('PreferencePeople');
     } else {
       Alert.alert('모든 질문에 답변을 선택해주세요.');
