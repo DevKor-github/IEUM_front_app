@@ -20,6 +20,7 @@ import SavedToFolder from '../assets/saved-to-folder.svg';
 import CheckedSpot from '../assets/checked-spot.svg';
 import EmptySpot from '../assets/empty-circle.svg';
 import SelectIcon from '../assets/select-icon.svg';
+import {useFocusEffect} from '@react-navigation/native';
 
 export type SpotSaveScreenProps = StackScreenProps<
   HomeStackParamList,
@@ -34,13 +35,51 @@ interface Place {
   isSaved: boolean;
 }
 
+interface SavedPlace {
+  id: number;
+  name: string;
+  simplifiedAddress: string;
+  mappedCategory: string;
+}
+
 const dWidth = Dimensions.get('window').width;
 
 const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
   const {collectionId, collectionContent, collectionType} = route.params;
   const [places, setPlaces] = useState<Place[]>([]);
+  const [savedPlaces, setSavedPlaces] = useState<SavedPlace[]>([]);
   const [selectedPlaces, setSelectedPlaces] = useState<number[]>([]);
   const [isSelecting, setIsSelecting] = useState(false);
+
+  useFocusEffect(() => {
+    const fetchSavedPlaces = async () => {
+      try {
+        const accessToken = await EncryptedStorage.getItem('accessToken');
+        const response = await API.get('/folders/default/places-list', {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          params: {
+            take: 10, // 한번에 가져올 장소의 개수, 필요에 따라 조정
+            cursorId: 0, // 첫 페이지를 불러올 때는 0
+            addressList: [],
+            categoryList: [],
+          },
+        });
+
+        if (response.status === 200) {
+          const data = response.data.response.data;
+          setSavedPlaces(data);
+        } else {
+          Alert.alert('Error', 'Failed to fetch saved places.');
+        }
+      } catch (error) {
+        console.error('Error fetching saved places:', error);
+        Alert.alert('Error', 'An error occurred while fetching saved places.');
+      }
+    };
+    fetchSavedPlaces();
+  });
 
   useEffect(() => {
     const fetchPlaces = async () => {
@@ -57,19 +96,13 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
             },
           },
         );
-
-        if (response.status === 200) {
-          const data = response.data.response.data;
-          setPlaces(data);
-        } else {
-          Alert.alert('Error', 'Failed to fetch places.');
-        }
+        const data = response.data.response.data;
+        setPlaces(data);
       } catch (error) {
         console.error('Error fetching places:', error);
         Alert.alert('Error', 'An error occurred while fetching places.');
       }
     };
-
     fetchPlaces();
   }, [collectionId]);
 
@@ -82,7 +115,13 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
   };
 
   const handleSavePlace = async (placeId: number, isSaved: boolean) => {
-    if (isSaved) return;
+    if (
+      isSaved ||
+      (savedPlaces && savedPlaces.some(place => place.id === placeId))
+    ) {
+      Alert.alert('이미 저장된 장소입니다');
+      return;
+    }
 
     try {
       const accessToken = await EncryptedStorage.getItem('accessToken');
@@ -93,7 +132,6 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
         },
         {
           headers: {
-            'Content-Type': 'application/json',
             Authorization: `Bearer ${accessToken}`,
           },
         },
@@ -111,6 +149,15 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
   };
 
   const saveSelectedPlaces = async () => {
+    const alreadySavedPlaces = selectedPlaces.filter(
+      placeId => savedPlaces && savedPlaces.some(place => place.id === placeId),
+    );
+
+    if (alreadySavedPlaces.length > 0) {
+      Alert.alert('이미 저장된 장소가 포함되어 있습니다.');
+      return;
+    }
+
     try {
       const accessToken = await EncryptedStorage.getItem('accessToken');
       const response = await API.post(
@@ -120,12 +167,11 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
         },
         {
           headers: {
-            'Content-Type': 'application/json',
             Authorization: `Bearer ${accessToken}`,
           },
         },
       );
-      console.log(response)
+      console.log(response);
       setPlaces(prevPlaces =>
         prevPlaces.map(place =>
           selectedPlaces.includes(place.placeId)
@@ -169,12 +215,35 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
         </Pressable>
       ) : (
         <Pressable
-          style={item.isSaved ? styles.savedButton : styles.saveButton}
+          style={
+            item.isSaved ||
+            (savedPlaces &&
+              savedPlaces.some(place => place.id === item.placeId))
+              ? styles.savedButton
+              : styles.saveButton
+          }
           onPress={() => handleSavePlace(item.placeId, item.isSaved)}>
-          <Text style={item.isSaved ? styles.savedText : styles.saveText}>
-            {item.isSaved ? '보관함에 저장됨' : '보관함에 저장'}
+          <Text
+            style={
+              item.isSaved ||
+              (savedPlaces &&
+                savedPlaces.some(place => place.id === item.placeId))
+                ? styles.savedText
+                : styles.saveText
+            }>
+            {item.isSaved ||
+            (savedPlaces &&
+              savedPlaces.some(place => place.id === item.placeId))
+              ? '보관함에 저장됨'
+              : '보관함에 저장'}
           </Text>
-          {item.isSaved ? <SavedToFolder /> : <SaveToFolder />}
+          {item.isSaved ||
+          (savedPlaces &&
+            savedPlaces.some(place => place.id === item.placeId)) ? (
+            <SavedToFolder />
+          ) : (
+            <SaveToFolder />
+          )}
         </Pressable>
       )}
     </View>
