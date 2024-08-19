@@ -11,7 +11,7 @@ import {
   NaverMapView,
 } from '@mj-studio/react-native-naver-map';
 import {StackScreenProps} from '@react-navigation/stack';
-import {RootStackParamList} from '../../types';
+import {MapStackParamList} from '../../types';
 import {BottomSheetModal, BottomSheetModalProvider} from '@gorhom/bottom-sheet';
 import {useCallback, useEffect, useRef, useState} from 'react';
 import FilterIcon from '../assets/filter-icon.svg';
@@ -32,7 +32,7 @@ import {folderWithSelected} from '../recoil/folder';
 import FilterBottomSheet from '../component/FilterBottomSheet';
 import regionAtom from '../recoil/region';
 
-export type MapScreenProps = StackScreenProps<RootStackParamList, 'Map'>;
+export type MapScreenProps = StackScreenProps<MapStackParamList, 'Map'>;
 
 const MapScreen = ({navigation, route}: MapScreenProps) => {
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);

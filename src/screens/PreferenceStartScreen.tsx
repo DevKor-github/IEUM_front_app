@@ -10,18 +10,22 @@ import {
 } from 'react-native';
 import {StackScreenProps} from '@react-navigation/stack';
 import {RootStackParamList} from '../../types';
+import {useRecoilValue} from 'recoil';
+import userInfoAtom from '../recoil/user/index';
 
 export type PreferenceStartScreenProps = StackScreenProps<
   RootStackParamList,
   'PreferenceStart'
 >;
 
-const dHeight = Dimensions.get('window').height
+const dHeight = Dimensions.get('window').height;
 
 const PreferenceStartScreen = ({
   navigation,
   route,
 }: PreferenceStartScreenProps) => {
+  const userInfo = useRecoilValue(userInfoAtom);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -42,7 +46,7 @@ const PreferenceStartScreen = ({
             color: 'grey',
             textAlign: 'center',
           }}>
-          간단한 질문을 통해 김명진 님의{'\n'}
+          간단한 질문을 통해 {userInfo.nickname} 님의{'\n'}
           취향을 저격할 공간들을 추천받으세요💖
         </Text>
         <View
@@ -54,7 +58,7 @@ const PreferenceStartScreen = ({
           }}>
           <Pressable
             onPress={() => {
-              navigation.navigate('PreferenceMBTI');
+              navigation.navigate('PreferenceMBTI', route.params);
             }}
             style={styles.nextButton}>
             <Text style={styles.nextButtonText}>시작🎉</Text>

@@ -43,7 +43,7 @@ const SignUpDoneScreen = ({
           }}>
           <Pressable
             onPress={() => {
-              navigation.navigate('Login');
+              navigation.navigate('Home');
             }}
             style={styles.nextButton}>
             <Text style={styles.nextButtonText}>이음 시작하기 😎</Text>

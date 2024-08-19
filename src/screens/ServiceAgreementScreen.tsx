@@ -1,4 +1,4 @@
-import * as React from 'react';
+import {useState} from 'react';
 import {
   View,
   StyleSheet,
@@ -9,6 +9,8 @@ import {
 } from 'react-native';
 import {StackScreenProps} from '@react-navigation/stack';
 import {RootStackParamList} from '../../types';
+import {useSetRecoilState} from 'recoil';
+import userInfoAtom from '../recoil/user/index';
 import BackButton from '../assets/back-button.svg';
 import AgreementButton from '../assets/agreement-button.svg';
 import ActiveAgreementButton from '../assets/agreement-button-active.svg';
@@ -28,7 +30,7 @@ const ServiceAgreementScreen = ({
   navigation,
   route,
 }: ServiceAgreementScreenProps) => {
-  const [agreementStates, setAgreementStates] = React.useState<
+  const [agreementStates, setAgreementStates] = useState<
     Record<AgreementState, boolean>
   >({
     all: false,
@@ -76,11 +78,25 @@ const ServiceAgreementScreen = ({
     );
   };
 
+  const setUserInfo = useSetRecoilState(userInfoAtom);
+
+  const handleNextPress = () => {
+    setUserInfo(prevState => ({
+      ...prevState,
+      isAdConfirmed: agreementStates.ads,
+    }));
+
+    navigation.navigate('ProfileSetting');
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Pressable onPress={() => { navigation.navigate('Login')}}>
+          <Pressable
+            onPress={() => {
+              navigation.navigate('Login');
+            }}>
             <BackButton style={styles.backButton} />
           </Pressable>
           <Text style={styles.headerText}>회원가입</Text>
@@ -158,9 +174,7 @@ const ServiceAgreementScreen = ({
               justifyContent: 'flex-end',
             }}>
             <Pressable
-              onPress={() => {
-                navigation.navigate('ProfileSetting');
-              }}
+              onPress={handleNextPress}
               style={styles.nextButton}
               disabled={!areRequiredAgreementsAccepted()}>
               <Text style={styles.nextButtonText}>다음</Text>

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import {useState} from 'react';
 import {
   View,
   StyleSheet,
@@ -10,10 +10,12 @@ import {
   TextInput,
 } from 'react-native';
 import {StackScreenProps} from '@react-navigation/stack';
-import {RootStackParamList} from '../../types';
+import {HomeStackParamList} from '../../types';
+import {API} from '../api/base';
+import EncryptedStorage from 'react-native-encrypted-storage';
 
 export type LinkInputScreenProps = StackScreenProps<
-  RootStackParamList,
+  HomeStackParamList,
   'LinkInput'
 >;
 
@@ -21,6 +23,49 @@ const dHeight = Dimensions.get('window').height;
 const dWidth = Dimensions.get('window').width;
 
 const LinkInputScreen = ({navigation, route}: LinkInputScreenProps) => {
+  const [requestUrl, setRequestUrl] = useState('');
+
+  const onChangeUrlText = (inputText: string) => {
+    setRequestUrl(inputText);
+  };
+
+  const onSubmitUrl = async () => {
+    const uuid = await EncryptedStorage.getItem('uuid');
+
+    // 정규 표현식을 사용하여 URL 유효성 검사
+    const isInstagram = /instagram\.com/.test(requestUrl);
+    const isNaverBlog = /blog\.naver\.com/.test(requestUrl);
+
+    if (!isInstagram && !isNaverBlog) {
+      // URL이 Instagram이나 Naver Blog가 아닐 경우
+      navigation.navigate('LinkReject');
+      return;
+    }
+
+    // collectionType 설정
+    const collectionType = isNaverBlog ? 1 : 0;
+
+    try {
+      const requestBody = {
+        link: requestUrl,
+      };
+      console.log(requestBody);
+      const accessToken = await EncryptedStorage.getItem('accessToken');
+      const response = await API.post('/crawling', requestBody, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      // 성공 시 홈으로 이동
+      navigation.navigate('Home');
+    } catch (error) {
+      console.error(error);
+      Alert.alert('오류', '서버 요청 중 문제가 발생했습니다.');
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -32,8 +77,6 @@ const LinkInputScreen = ({navigation, route}: LinkInputScreenProps) => {
             justifyContent: 'space-between',
             alignItems: 'center',
             paddingHorizontal: 24,
-            borderColor: '#1212140D',
-            borderWidth: 1,
           }}>
           <Pressable onPress={() => navigation.navigate('Home')}>
             <Text
@@ -49,7 +92,7 @@ const LinkInputScreen = ({navigation, route}: LinkInputScreenProps) => {
           <Text style={{fontSize: 17, fontWeight: '500', lineHeight: 22}}>
             링크 입력
           </Text>
-          <Pressable onPress={() => {}}>
+          <Pressable onPress={onSubmitUrl}>
             <Text
               style={{
                 fontSize: 17,
@@ -80,6 +123,7 @@ const LinkInputScreen = ({navigation, route}: LinkInputScreenProps) => {
           </Text>
           <TextInput
             autoCapitalize="none"
+            onChangeText={onChangeUrlText}
             style={{
               width: dWidth - 48,
               paddingBottom: 10,
@@ -90,6 +134,7 @@ const LinkInputScreen = ({navigation, route}: LinkInputScreenProps) => {
               fontSize: 14,
               fontWeight: '500',
             }}
+            value={requestUrl}
           />
         </View>
       </View>

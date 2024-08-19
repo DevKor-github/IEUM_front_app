@@ -12,7 +12,34 @@ export type RootStackParamList = {
   InstagramFail: undefined;
   SignUpDone: undefined;
   Home: undefined;
+};
+
+export type MapStackParamList = {
+  Map: undefined;
+};
+
+export type HomeStackParamList = {
+  Home: undefined;
+  ServiceAgreement: undefined;
   LinkInput: undefined;
   LinkReject: undefined;
-  Map: undefined;
+  SpotCandidate: undefined;
+  SpotSave: {
+    collectionId: number;
+    collectionContent: string;
+    collectionType: string;
+  };
+};
+
+export type TravelStackParamList = {
+  Travel: undefined;
+};
+
+export type TabParamList = {
+  HomeTab: undefined;
+  LinkInput: undefined;
+  LinkReject: undefined;
+  SpotCandidate: undefined;
+  MapTab: undefined;
+  TravelTab: undefined;
 };
