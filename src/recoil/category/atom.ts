@@ -1,6 +1,6 @@
 import {atom} from 'recoil';
 export enum Categories {
-  'DEFAULT' = 'DEFAULT',
+  'FOOD' = 'FOOD',
   'CAFE' = 'CAFE',
   'ALCOHOL' = 'ALCOHOL',
   'MUSEUM' = 'MUSEUM',
@@ -9,9 +9,9 @@ export enum Categories {
   'OTHERS' = 'OTHERS',
 }
 
-const categoryAtom = atom<Categories>({
+const categoryAtom = atom<Categories[]>({
   key: 'categoryAtom',
-  default: Categories.DEFAULT,
+  default: [],
 });
 
 // export default 사용, atom만 익스포트

@@ -1,17 +1,30 @@
 import {selector} from 'recoil';
 import placeAtom from './atom';
 import categoryAtom from '../category';
-import {Categories} from '../category/atom';
+import regionAtom from '../region';
 
 const placeWithFilter = selector({
   key: 'placeWithFilter',
   get: ({get}) => {
     const places = get(placeAtom);
-    const category = get(categoryAtom);
+    const categories = get(categoryAtom);
+    const regions = get(regionAtom);
 
-    if (category === Categories.DEFAULT) return places;
+    let filteredPlace = places;
 
-    return places.filter(place => place.category === category);
+    if (categories.length > 0) {
+      filteredPlace = filteredPlace.filter(place =>
+        categories.includes(place.category),
+      );
+    }
+
+    if (regions.length > 0) {
+      filteredPlace = filteredPlace.filter(place =>
+        regions.includes(place.region),
+      );
+    }
+
+    return filteredPlace;
   },
 });
 
