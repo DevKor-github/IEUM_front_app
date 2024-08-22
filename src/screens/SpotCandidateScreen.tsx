@@ -158,19 +158,21 @@ const SpotCandidateScreen = ({navigation}: SpotCandidateScreenProps) => {
                     ]}
                     start={{x: 0, y: 0}}
                     end={{x: 1, y: 0}}
-                    style={styles.instagramBadge}>
+                    style={styles.collectionTypeBadge}>
                     <Text style={styles.cardType}>INSTAGRAM</Text>
                   </LinearGradient>
                 ) : (
-                  <Text
-                    style={[
-                      styles.cardType,
-                      {
-                        backgroundColor: '#1EC800',
-                      },
-                    ]}>
-                    NAVER BLOG
-                  </Text>
+                  <LinearGradient
+                    colors={[
+                      'rgba(25, 248, 118, 0.92)',
+                      'rgba(3, 235, 100, 0.92)',
+                      'rgba(39, 252, 227, 0.92)',
+                    ]}
+                    start={{x: -0.02, y: 0}}
+                    end={{x: 1.54, y: 1}}
+                    style={styles.collectionTypeBadge}>
+                    <Text style={styles.cardType}>NAVER BLOG</Text>
+                  </LinearGradient>
                 )}
                 <View style={styles.newBlock}>
                   <Text style={styles.newTag}>NEW</Text>
@@ -210,19 +212,20 @@ const SpotCandidateScreen = ({navigation}: SpotCandidateScreenProps) => {
                     ]}
                     start={{x: 0, y: 0}}
                     end={{x: 1, y: 0}}
-                    style={styles.instagramBadge}>
+                    style={styles.collectionTypeBadge}>
                     <Text style={styles.cardType}>INSTAGRAM</Text>
                   </LinearGradient>
                 ) : (
-                  <Text
-                    style={[
-                      styles.cardType,
-                      {
-                        backgroundColor: '#D1D1D1',
-                      },
-                    ]}>
-                    NAVER BLOG
-                  </Text>
+                  <LinearGradient
+                    colors={[
+                      'rgba(209, 209, 209, 1)',
+                      'rgba(209, 209, 209, 1)',
+                    ]}
+                    start={{x: 0, y: 0}}
+                    end={{x: 1, y: 0}}
+                    style={styles.collectionTypeBadge}>
+                    <Text style={styles.cardType}>NAVER BLOG</Text>
+                  </LinearGradient>
                 )}
                 <View style={styles.progressContainer}>
                   <Text style={styles.progressText}>
@@ -344,7 +347,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
-  instagramBadge: {
+  collectionTypeBadge: {
     paddingVertical: 4,
     paddingHorizontal: 5,
     borderRadius: 1,
