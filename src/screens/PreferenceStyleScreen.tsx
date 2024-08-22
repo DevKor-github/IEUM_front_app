@@ -39,33 +39,27 @@ const PreferenceStyleScreen = ({
 }: PreferenceStyleScreenProps) => {
   const [selectedIndexes, setSelectedIndexes] = React.useState<Array<number>>(
     Array(6).fill(-1),
-  ); 
+  );
 
   const setUserInfo = useSetRecoilState(userInfoAtom);
 
   const handlePress = (questionIndex: number, answerIndex: number) => {
     setSelectedIndexes(prevIndexes =>
       prevIndexes.map((index, i) =>
-        i === questionIndex ? (index === answerIndex ? 0 : answerIndex) : index,
+        i === questionIndex ? answerIndex : index,
       ),
     );
   };
 
   const handleNextPress = () => {
-    const allQuestionsAnswered = selectedIndexes.every(index => index !== null);
+    const allQuestionsAnswered = selectedIndexes.every(index => index !== -1);
     if (allQuestionsAnswered) {
-      const scheduleStyle =
-        selectedIndexes[0] !== 0 ? selectedIndexes[0]! + 1 : 0;
-      const destinationStyle1 =
-        selectedIndexes[1] !== 0 ? selectedIndexes[1]! + 1 : 0;
-      const destinationStyle2 =
-        selectedIndexes[2] !== 0 ? selectedIndexes[2]! + 1 : 0;
-      const destinationStyle3 =
-        selectedIndexes[3] !== 0 ? selectedIndexes[3]! + 1 : 0;
-      const planningStyle =
-        selectedIndexes[4] !== 0 ? selectedIndexes[4]! + 1 : 0;
-      const budgetStyle =
-        selectedIndexes[5] !== 0 ? selectedIndexes[5]! + 1 : 0;
+      const scheduleStyle = selectedIndexes[0] + 1;
+      const destinationStyle1 = selectedIndexes[1] + 1;
+      const destinationStyle2 = selectedIndexes[2] + 1;
+      const destinationStyle3 = selectedIndexes[3] + 1;
+      const planningStyle = selectedIndexes[4] + 1;
+      const budgetStyle = selectedIndexes[5] + 1;
 
       setUserInfo(prevState => ({
         ...prevState,

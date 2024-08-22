@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {
   View,
   StyleSheet,
@@ -15,7 +15,7 @@ import {HomeStackParamList} from '../../types';
 import BackButton from '../assets/back-button.svg';
 import {API} from '../api/base';
 import EncryptedStorage from 'react-native-encrypted-storage';
-import { useFocusEffect } from '@react-navigation/native';
+import {useFocusEffect} from '@react-navigation/native';
 
 export type SpotCandidateScreenProps = StackScreenProps<
   HomeStackParamList,
@@ -37,61 +37,83 @@ const SpotCandidateScreen = ({navigation}: SpotCandidateScreenProps) => {
   const [unviewedLinks, setUnviewedLinks] = useState<LinkData[]>([]);
   const [viewedLinks, setViewedLinks] = useState<LinkData[]>([]);
 
-  useFocusEffect(() => {
-    const fetchLinks = async () => {
-      try {
-        const accessToken = await EncryptedStorage.getItem('accessToken');
+  useFocusEffect(
+    React.useCallback(() => {
+      let isActive = true;
 
-        if (!accessToken) {
-          throw new Error('No access token found');
+      const fetchLinks = async () => {
+        try {
+          const accessToken = await EncryptedStorage.getItem('accessToken');
+
+          if (!accessToken) {
+            throw new Error('No access token found');
+          }
+
+          // Fetch unviewed links
+          const unviewedResponse = await API.get<{
+            response: {data: LinkData[]};
+          }>('/collections/unviewed', {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+            params: {
+              cursorId: 0,
+            },
+          });
+          if (isActive) {
+            setUnviewedLinks(unviewedResponse.data.response.data);
+          }
+
+          // Fetch viewed links
+          const viewedResponse = await API.get<{response: {data: LinkData[]}}>(
+            '/collections/viewed',
+            {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+              params: {
+                cursorId: 0,
+              },
+            },
+          );
+          if (isActive) {
+            setViewedLinks(viewedResponse.data.response.data);
+          }
+        } catch (error) {
+          console.error(error);
         }
+      };
 
-        // Fetch unviewed links
-        const unviewedResponse = await API.get<{data: LinkData[]}>(
-          '/collections/unviewed',
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-            params: {
-              cursorId: 0,
-            },
-          },
-        );
-        setUnviewedLinks(unviewedResponse?.data.response.data);
+      fetchLinks();
 
-        // Fetch viewed links
-        const viewedResponse = await API.get<{data: LinkData[]}>(
-          '/collections/viewed',
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-            params: {
-              cursorId: 0,
-            },
-          },
-        );
-        setViewedLinks(viewedResponse?.data.response.data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    fetchLinks();
-  });
+      return () => {
+        // Cleanup function to cancel any pending async operations
+        isActive = false;
+      };
+    }, []),
+  );
 
   const openLink = (url: string) => {
     Linking.openURL(url).catch(err => console.error("Couldn't load page", err));
   };
 
-  const handlePress = (collectionId: number, collectionContent: string, collectionType: string) => {
-    navigation.navigate('SpotSave', {collectionId, collectionContent, collectionType});
+  const handlePress = (
+    collectionId: number,
+    collectionContent: string,
+    collectionType: string,
+  ) => {
+    navigation.navigate('SpotSave', {
+      collectionId,
+      collectionContent,
+      collectionType,
+    });
   };
 
   const cleanInstagramContent = (content: string) => {
     const colonIndex = content.indexOf('"');
-    return colonIndex !== -1 ? content.substring(colonIndex + 1).trim() : content;
+    return colonIndex !== -1
+      ? content.substring(colonIndex + 1).trim()
+      : content;
   };
 
   return (
@@ -121,7 +143,9 @@ const SpotCandidateScreen = ({navigation}: SpotCandidateScreenProps) => {
             <Pressable
               style={styles.card}
               key={link.id}
-              onPress={() => handlePress(link.id, link.content, link.collectionType)}>
+              onPress={() =>
+                handlePress(link.id, link.content, link.collectionType)
+              }>
               <View style={styles.cardHeader}>
                 {link.collectionType === 'INSTAGRAM' ? (
                   <LinearGradient
@@ -134,19 +158,21 @@ const SpotCandidateScreen = ({navigation}: SpotCandidateScreenProps) => {
                     ]}
                     start={{x: 0, y: 0}}
                     end={{x: 1, y: 0}}
-                    style={styles.instagramBadge}>
+                    style={styles.collectionTypeBadge}>
                     <Text style={styles.cardType}>INSTAGRAM</Text>
                   </LinearGradient>
                 ) : (
-                  <Text
-                    style={[
-                      styles.cardType,
-                      {
-                        backgroundColor: '#1EC800',
-                      },
-                    ]}>
-                    NAVER BLOG
-                  </Text>
+                  <LinearGradient
+                    colors={[
+                      'rgba(25, 248, 118, 0.92)',
+                      'rgba(3, 235, 100, 0.92)',
+                      'rgba(39, 252, 227, 0.92)',
+                    ]}
+                    start={{x: -0.02, y: 0}}
+                    end={{x: 1.54, y: 1}}
+                    style={styles.collectionTypeBadge}>
+                    <Text style={styles.cardType}>NAVER BLOG</Text>
+                  </LinearGradient>
                 )}
                 <View style={styles.newBlock}>
                   <Text style={styles.newTag}>NEW</Text>
@@ -174,7 +200,9 @@ const SpotCandidateScreen = ({navigation}: SpotCandidateScreenProps) => {
             <Pressable
               style={[styles.card, styles.viewedCard]}
               key={link.id}
-              onPress={() => handlePress(link.id, link.content, link.collectionType)}>
+              onPress={() =>
+                handlePress(link.id, link.content, link.collectionType)
+              }>
               <View style={styles.cardHeader}>
                 {link.collectionType === 'INSTAGRAM' ? (
                   <LinearGradient
@@ -184,19 +212,20 @@ const SpotCandidateScreen = ({navigation}: SpotCandidateScreenProps) => {
                     ]}
                     start={{x: 0, y: 0}}
                     end={{x: 1, y: 0}}
-                    style={styles.instagramBadge}>
+                    style={styles.collectionTypeBadge}>
                     <Text style={styles.cardType}>INSTAGRAM</Text>
                   </LinearGradient>
                 ) : (
-                  <Text
-                    style={[
-                      styles.cardType,
-                      {
-                        backgroundColor: '#D1D1D1',
-                      },
-                    ]}>
-                    NAVER BLOG
-                  </Text>
+                  <LinearGradient
+                    colors={[
+                      'rgba(209, 209, 209, 1)',
+                      'rgba(209, 209, 209, 1)',
+                    ]}
+                    start={{x: 0, y: 0}}
+                    end={{x: 1, y: 0}}
+                    style={styles.collectionTypeBadge}>
+                    <Text style={styles.cardType}>NAVER BLOG</Text>
+                  </LinearGradient>
                 )}
                 <View style={styles.progressContainer}>
                   <Text style={styles.progressText}>
@@ -318,7 +347,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
-  instagramBadge: {
+  collectionTypeBadge: {
     paddingVertical: 4,
     paddingHorizontal: 5,
     borderRadius: 1,

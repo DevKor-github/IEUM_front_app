@@ -257,19 +257,34 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
         </Pressable>
       </View>
       <View style={styles.container}>
-        <LinearGradient
-          colors={[
-            'rgba(255, 27, 144, 0.85)',
-            'rgba(248, 2, 97, 0.85)',
-            'rgba(237, 0, 192, 0.85)',
-            'rgba(197, 0, 233, 0.85)',
-            'rgba(112, 23, 255, 0.85)',
-          ]}
-          start={{x: 0, y: 0}}
-          end={{x: 1, y: 0}}
-          style={styles.instagramBadge}>
-          <Text style={styles.instagramBadgeText}>INSTAGRAM</Text>
-        </LinearGradient>
+        {collectionType === 'INSTAGRAM' ? (
+          <LinearGradient
+            colors={[
+              'rgba(255, 27, 144, 0.85)',
+              'rgba(248, 2, 97, 0.85)',
+              'rgba(237, 0, 192, 0.85)',
+              'rgba(197, 0, 233, 0.85)',
+              'rgba(112, 23, 255, 0.85)',
+            ]}
+            start={{x: 0, y: 0}}
+            end={{x: 1, y: 0}}
+            style={styles.instagramBadge}>
+            <Text style={styles.instagramBadgeText}>INSTAGRAM</Text>
+          </LinearGradient>
+        ) : (
+          <LinearGradient
+            colors={[
+              'rgba(25, 248, 118, 0.92)',
+              'rgba(3, 235, 100, 0.92)',
+              'rgba(39, 252, 227, 0.92)',
+            ]}
+            start={{x: -0.02, y: 0}}
+            end={{x: 1.54, y: 1}}
+            style={styles.naverBadge}>
+            <Text style={styles.naverBadgeText}>NAVER BLOG</Text>
+          </LinearGradient>
+        )}
+
         <Text
           style={styles.collectionContent}
           numberOfLines={2}
@@ -351,6 +366,7 @@ const styles = StyleSheet.create({
     width: 84,
     height: 23,
     alignSelf: 'flex-start',
+    justifyContent: 'center',
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 18,
@@ -361,6 +377,17 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#FFF',
   },
+  naverBadge: {
+    width: 90,
+    height: 23,
+    alignSelf: 'flex-start',
+    justifyContent: 'center',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 18,
+    margin: 16,
+  },
+  naverBadgeText: {fontSize: 11, fontWeight: '700', color: '#FFF'},
   collectionContent: {
     fontSize: 14,
     fontWeight: '600',
