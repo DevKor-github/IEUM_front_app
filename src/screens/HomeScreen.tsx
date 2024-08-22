@@ -17,10 +17,8 @@ import LinkInputIcon from '../assets/link-input-icon.svg';
 import LinkInputButton from '../assets/agreement-toggle-button.svg';
 import {API} from '../api/base';
 import {StackScreenProps} from '@react-navigation/stack';
-import {useRecoilValue} from 'recoil';
-import userInfoAtom from '../recoil/user/index';
 import EncryptedStorage from 'react-native-encrypted-storage';
-import { useFocusEffect } from '@react-navigation/native';
+import {useFocusEffect} from '@react-navigation/native';
 
 export type HomeScreenProps = StackScreenProps<HomeStackParamList, 'Home'>;
 
@@ -39,6 +37,22 @@ const dWidth = Dimensions.get('window').width;
 const HomeScreen = ({navigation}: HomeScreenProps) => {
   const [unviewedLinksCount, setUnviewedLinksCount] = useState<number>(0);
   const [unSavedPlacesCount, setUnSavedPlacesCount] = useState<number>(0);
+  const [username, setUserName] = useState('');
+
+  useEffect(() => {
+    async function getUserProfile() {
+      const accessToken = await EncryptedStorage.getItem('accessToken');
+      const res = await API.get('/users/me/profile', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      if (res.status === 200) {
+        setUserName(res.data.response.nickname);
+      }
+    }
+    getUserProfile();
+  }, []);
 
   useEffect(() => {
     async function getFolder() {
@@ -111,8 +125,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     fetchLinkData();
   });
 
-  const userInfo = useRecoilValue(userInfoAtom);
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -122,7 +134,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         </View>
         <View style={styles.profileSection}>
           <EmptyProfile />
-          <Text style={styles.nicknameText}>{userInfo.nickname}님의 공간</Text>
+          <Text style={styles.nicknameText}>{username} 님의 공간</Text>
           <Pressable style={styles.editButton}>
             <EditIcon />
             <Text style={styles.editText}>편집</Text>
