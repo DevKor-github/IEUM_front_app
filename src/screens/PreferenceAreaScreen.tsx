@@ -6,6 +6,7 @@ import {
   SafeAreaView,
   Pressable,
   Dimensions,
+  Alert,
 } from 'react-native';
 import {StackScreenProps} from '@react-navigation/stack';
 import {RootStackParamList} from '../../types';
@@ -74,6 +75,20 @@ const PreferenceAreaScreen = ({
       }
     });
     return preferredRegion;
+  };
+
+  const handleNext = () => {
+    if (selectedAreas.size === 0) {
+      Alert.alert('적어도 하나의 지역을 선택해주세요');
+      return;
+    }
+
+    const preferredRegion = generateFinalList();
+    setUserInfo(prevState => ({
+      ...prevState,
+      preferredRegion: preferredRegion,
+    }));
+    navigation.navigate('PreferenceStyle');
   };
 
   return (
@@ -148,16 +163,7 @@ const PreferenceAreaScreen = ({
             alignItems: 'center',
             justifyContent: 'flex-end',
           }}>
-          <Pressable
-            onPress={() => {
-              const preferredRegion = generateFinalList();
-              setUserInfo((prevState) => ({
-                ...prevState,
-                preferredRegion: preferredRegion
-              }));
-              navigation.navigate('PreferenceStyle');
-            }}
-            style={styles.nextButton}>
+          <Pressable onPress={handleNext} style={styles.nextButton}>
             <Text style={styles.nextButtonText}>다음</Text>
           </Pressable>
         </View>
