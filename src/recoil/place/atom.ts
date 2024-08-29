@@ -13,6 +13,16 @@ export interface IPlace {
   longitude: number;
   hashtag: string[];
 }
+
+export enum PlaceConvenience {
+  PARK = '주차',
+  DOG = '반려동물 동반',
+  GROUP = '단체석',
+  TAKEOUT = '포장',
+  DELIVERY = '배달',
+  RESERVATION = '예약',
+}
+
 const placeAtom = atom<IPlace[]>({
   key: 'placeAtom',
   default: [

@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import LocationIcon from '../assets/location-icon.svg';
 import SaveFinIcon from '../assets/save-fin-icon.svg';
-import BookmarkIcon from '../assets/bookmark-icon.svg';
+import BookmarkIcon from '../assets/bookmark-filled-icon.svg';
 import CloseIcon from '../assets/close-icon.svg';
 import CurrentLocationIcon from '../assets/current-location-icon.svg';
 
@@ -35,6 +35,7 @@ export interface IPlaceBottomSheet {
   bottomSheetModalRef: React.RefObject<BottomSheetModal>;
   isModalOpen: boolean;
   setIsModalOpen: (open: boolean) => void;
+  pressPlace: (index: number) => void;
 }
 
 type Mode = 'SAVED_PLACED' | 'FOLDER';
@@ -141,7 +142,7 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
         <PlaceList
           placeList={placeInFolder}
           onPress={index => {
-            console.log(index);
+            props.pressPlace(index);
           }}
         />
       );
@@ -160,7 +161,7 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
       <PlaceList
         placeList={filteredPlace}
         onPress={index => {
-          console.log(index);
+          props.pressPlace(index);
         }}
       />
     );

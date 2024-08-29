@@ -193,6 +193,9 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
             bottomSheetModalRef={bottomSheetModalRef}
             isModalOpen={isOpenModal}
             setIsModalOpen={setIsOpenModal}
+            pressPlace={(index: number) =>
+              navigation.navigate('PlaceDetail', {placeId: index})
+            }
           />
         </BottomSheetModalProvider>
 
