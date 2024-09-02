@@ -14,7 +14,11 @@ import BookmarkIcon from '../assets/bookmark-icon.svg';
 import PhoneIcon from '../assets/phone-icon.svg';
 import InstaIcon from '../assets/insta-icon.svg';
 import PlaceConvenienceSection from '../component/PlaceConvenienceSection';
-import {PlaceConvenience} from '../recoil/place/atom';
+import {IPlace, PlaceConvenience} from '../recoil/place/atom';
+import {
+  NaverMapMarkerOverlay,
+  NaverMapView,
+} from '@mj-studio/react-native-naver-map';
 
 export type PlaceDetailScreenProps = StackScreenProps<
   MapStackParamList,
@@ -105,12 +109,30 @@ const PlaceDetailScreen = ({navigation, route}: PlaceDetailScreenProps) => {
         <PlaceConvenienceSection placeConveniences={[PlaceConvenience.DOG]} />
 
         {/* 지도 섹션 */}
-        <View style={styles.section}>
+        <View style={[styles.section]}>
           <Text style={styles.sectionTitle}>지도</Text>
-          <Image
-            style={styles.mapImage}
-            source={{uri: 'https://example.com/map-image-url.jpg'}} // 여기에 지도 이미지 URL 추가
-          />
+          <View style={styles.mapImage}>
+            <View style={styles.overlay}>
+              <Text style={styles.overlayTitle}>
+                탭하여 자세한 위치를 확인하세요!
+              </Text>
+            </View>
+            <NaverMapView
+              style={{width: '100%', height: '100%'}}
+              isShowLocationButton={false}
+              isShowZoomControls={false}>
+              <NaverMapMarkerOverlay
+                // key={item.id}
+                latitude={37.359972}
+                longitude={127.104916}
+                anchor={{x: 0.5, y: 1}}
+                caption={{
+                  text: '장소 이름',
+                }}
+                image={require('../assets/cafe-icon.png')}
+              />
+            </NaverMapView>
+          </View>
         </View>
 
         {/* 내가 확인한 링크 섹션 */}
@@ -209,8 +231,24 @@ const styles = StyleSheet.create({
   phoneNumber: {marginLeft: 6},
   mapImage: {
     width: '100%',
-    height: 150,
-    marginTop: 8,
+    height: 200,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  overlay: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#000000',
+    borderRadius: 8,
+    opacity: 0.3,
+    position: 'absolute',
+    zIndex: 100,
+    padding: 16,
+  },
+  overlayTitle: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 14,
   },
 
   linkContainer: {
