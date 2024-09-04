@@ -51,8 +51,6 @@ const PreferenceDoneScreen = ({
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      console.log(response);
-      console.log(response.data);
       if (response.status === 201) {
         console.log('정보 입력 성공!');
       }

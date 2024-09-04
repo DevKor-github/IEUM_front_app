@@ -5,6 +5,7 @@ export const API_URL = 'https://dev.api.ieum.devkor.club/';
 export const API = axios.create({
   baseURL: API_URL,
   withCredentials: true,
+  // timeout: 10000, // 10초 대기
 });
 
 // Response 인터셉터 추가
@@ -18,13 +19,3 @@ API.interceptors.response.use(
     return Promise.reject(error);
   },
 );
-
-// /* baseAPI 정의 */
-// const baseAPI = {
-//   get: (url: string, data?: any) => API.get(url, data),
-//   post: (url: string, data?: any) => API.post(url, data),
-//   put: (url: string, data?: any) => API.put(url, data),
-//   delete: (url: string, data?: any) => API.delete(url, data),
-// };
-
-// export default baseAPI;

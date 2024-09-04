@@ -119,7 +119,6 @@ const SpotCandidateScreen = ({navigation}: SpotCandidateScreenProps) => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        {/* Header */}
         <View style={styles.header}>
           <Pressable onPress={() => navigation.navigate('Home')}>
             <BackButton style={styles.backButton} />

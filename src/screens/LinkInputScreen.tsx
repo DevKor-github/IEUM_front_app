@@ -42,14 +42,12 @@ const LinkInputScreen = ({navigation, route}: LinkInputScreenProps) => {
       return;
     }
 
-    // collectionType 설정
     const collectionType = isNaverBlog ? 1 : 0;
 
     try {
       const requestBody = {
         link: requestUrl,
       };
-      console.log(requestBody);
       const accessToken = await EncryptedStorage.getItem('accessToken');
       const response = await API.post('/crawling', requestBody, {
         headers: {
@@ -58,7 +56,6 @@ const LinkInputScreen = ({navigation, route}: LinkInputScreenProps) => {
         },
       });
 
-      // 성공 시 홈으로 이동
       navigation.navigate('Home');
     } catch (error) {
       console.error(error);
