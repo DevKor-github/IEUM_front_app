@@ -23,10 +23,16 @@ import InstagramConnectScreen from '../screens/InstagramConnectScreen';
 import SignUpDoneScreen from '../screens/SignUpDoneScreen';
 import InstagramFailScreen from '../screens/InstagramFailScreen';
 import HomeScreen from '../screens/HomeScreen';
+import ProfileEditScreen from '../screens/ProfileEditScreen';
 import LinkInputScreen from '../screens/LinkInputScreen';
 import LinkRejectScreen from '../screens/LinkRejectScreen';
 import SpotCandidateScreen from '../screens/SpotCandidateScreen';
 import SpotSaveScreen from '../screens/SpotSaveScreen';
+import FolderListScreen from '../screens/FolderListScreen';
+import NewFolderScreen from '../screens/NewFolderScreen';
+import FolderPlaceListScreen from '../screens/FolderPlaceListScreen';
+import RenameFolderScreen from '../screens/RenameFolderScreen';
+import PlaceListScreen from '../screens/PlaceListScreen';
 import MapScreen from '../screens/MapScreen';
 import TravelScreen from '../screens/TravelScreen';
 
@@ -123,8 +129,17 @@ const HStack = () => {
       <HomeStack.Screen name="Home" component={HomeScreen} />
       <HomeStack.Screen name="LinkInput" component={LinkInputScreen} />
       <HomeStack.Screen name="LinkReject" component={LinkRejectScreen} />
+      <HomeStack.Screen name="ProfileEdit" component={ProfileEditScreen} />
       <HomeStack.Screen name="SpotCandidate" component={SpotCandidateScreen} />
       <HomeStack.Screen name="SpotSave" component={SpotSaveScreen} />
+      <HomeStack.Screen name="FolderList" component={FolderListScreen} />
+      <HomeStack.Screen name="NewFolder" component={NewFolderScreen} />
+      <HomeStack.Screen
+        name="FolderPlaceList"
+        component={FolderPlaceListScreen}
+      />
+      <HomeStack.Screen name="RenameFolder" component={RenameFolderScreen} />
+      <HomeStack.Screen name="PlaceList" component={PlaceListScreen} />
       {/* Removed ServiceAgreement from HomeStack to avoid duplicate nesting */}
     </HomeStack.Navigator>
   );

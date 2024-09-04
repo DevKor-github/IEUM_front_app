@@ -21,6 +21,7 @@ export type MapStackParamList = {
 export type HomeStackParamList = {
   Home: undefined;
   ServiceAgreement: undefined;
+  ProfileEdit: undefined;
   LinkInput: undefined;
   LinkReject: undefined;
   SpotCandidate: undefined;
@@ -29,6 +30,11 @@ export type HomeStackParamList = {
     collectionContent: string;
     collectionType: string;
   };
+  FolderList: {newFolder: string | null};
+  NewFolder: undefined;
+  FolderPlaceList: {folderId: number; folderName: string};
+  RenameFolder: {folderId: number};
+  PlaceList: undefined;
 };
 
 export type TravelStackParamList = {
