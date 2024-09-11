@@ -77,7 +77,7 @@ const PlaceConvenienceSection = (props: PlaceConvenienceSection) => {
               <Text
                 style={[
                   styles.serviceText,
-                  !isSelected && styles.selectedServiceText,
+                  isSelected && styles.selectedServiceText,
                 ]}>
                 {key}
               </Text>
@@ -117,9 +117,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '400',
     marginTop: 10,
+    color: '#D9D9D9',
   },
   selectedServiceText: {
-    color: '#D9D9D9',
+    color: '#121212',
   },
 });
 
