@@ -9,6 +9,27 @@ export enum Categories {
   'OTHERS' = 'OTHERS',
 }
 
+export const mapServerCategoryToEnum = (serverCategory: string): Categories => {
+  switch (serverCategory) {
+    case 'Restaurant':
+      return Categories.FOOD;
+    case 'Cafe':
+      return Categories.CAFE;
+    case 'Bar':
+      return Categories.ALCOHOL;
+    case 'Museum':
+      return Categories.MUSEUM;
+    case 'Hotel':
+    case 'Hostel':
+      return Categories.STAY;
+    case 'Shop':
+    case 'Mall':
+      return Categories.SHOPPING;
+    default:
+      return Categories.OTHERS;
+  }
+};
+
 const categoryAtom = atom<Categories[]>({
   key: 'categoryAtom',
   default: [],
