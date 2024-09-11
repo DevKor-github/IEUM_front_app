@@ -1,19 +1,41 @@
 import {atom} from 'recoil';
 import {Categories} from '../category/atom';
 import {Regions} from '../region/atom';
+import {exp} from '@gorhom/bottom-sheet/lib/typescript/utilities/easingExp';
 
 export interface IPlace {
   id: number;
+  name: string;
+  address: string;
+  simplifiedAddress: string;
+  roadAddress: string;
+  phone: string;
   category: Categories;
-  region: Regions;
-  title: string;
-  location: string;
-  imageUrl: string;
   latitude: number;
   longitude: number;
-  hashtag: string[];
+  categoryTags: string;
+  hashTags: string[];
+  // region?: Regions;
+  openingHours: string[];
+  googleMapsUri: string;
+  linkedCollections: ILinkCollection[];
+  placeImages: IPlaceImage[];
 }
 
+export interface ILinkCollection {
+  id: number;
+  link: string;
+  collectionType: number;
+  content: string;
+  isViewed: boolean;
+  updateAt: string;
+}
+
+export interface IPlaceImage {
+  url: string;
+  authorName: string;
+  authorUri: string;
+}
 export enum PlaceConvenience {
   PARK = '주차',
   DOG = '반려동물 동반',
@@ -25,52 +47,7 @@ export enum PlaceConvenience {
 
 const placeAtom = atom<IPlace[]>({
   key: 'placeAtom',
-  default: [
-    {
-      id: 1,
-      category: Categories.CAFE,
-      region: Regions.SEOUL,
-      title: '장소 이름',
-      location: '제주 서귀포시 | CAFE',
-      imageUrl: 'https://example.com/image1.jpg',
-      latitude: 37.359972,
-      longitude: 127.104916,
-      hashtag: ['대형카페', 'sns 핫플'],
-    },
-    {
-      id: 2,
-      category: Categories.CAFE,
-      region: Regions.SEOUL,
-      title: '장소 이름',
-      location: '제주 서귀포시 | CAFE',
-      imageUrl: 'https://example.com/image2.jpg',
-      latitude: 37.350899,
-      longitude: 127.104916,
-      hashtag: ['대형카페', 'sns 핫플'],
-    },
-    {
-      id: 3,
-      category: Categories.CAFE,
-      region: Regions.SEOUL,
-      title: '장소 이름',
-      location: '제주 서귀포시 | CAFE',
-      imageUrl: 'https://example.com/image3.jpg',
-      latitude: 37.359,
-      longitude: 127.104916,
-      hashtag: ['대형카페', 'sns 핫플'],
-    },
-    {
-      id: 4,
-      category: Categories.CAFE,
-      region: Regions.SEOUL,
-      title: '장소 이름',
-      location: '제주 서귀포시 | CAFE',
-      imageUrl: 'https://example.com/image4.jpg',
-      latitude: 37.36998,
-      longitude: 127.1049,
-      hashtag: ['대형카페', 'sns 핫플'],
-    },
-  ],
+  default: [],
 });
 
 export default placeAtom;
