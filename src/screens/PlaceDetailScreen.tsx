@@ -185,8 +185,11 @@ const PlaceDetailScreen = ({navigation, route}: PlaceDetailScreenProps) => {
       {/* Header 이미지 */}
       <Image
         style={styles.headerImage}
-        source={{uri: placeDetails?.placeImages[0].url}} // 여기에 이미지 URL 추가
-        // source={require('../assets/unloaded-image.png')} // 여기에 이미지 URL 추가
+        source={
+          placeDetails?.placeImages[0]
+            ? {uri: placeDetails?.placeImages[0].url}
+            : require('../assets/unloaded-image.png')
+        } // 여기에 이미지 URL 추가
       />
 
       <View style={styles.contentContainer}>
