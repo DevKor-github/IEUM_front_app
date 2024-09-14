@@ -13,6 +13,7 @@ import {StackScreenProps} from '@react-navigation/stack';
 import {HomeStackParamList} from '../../types';
 import {API} from '../api/base';
 import EncryptedStorage from 'react-native-encrypted-storage';
+import {AxiosError} from 'axios';
 
 export type RenameFolderScreenProps = StackScreenProps<
   HomeStackParamList,
@@ -36,7 +37,7 @@ const RenameFolderScreen = ({navigation, route}: RenameFolderScreenProps) => {
         name: requestName,
       };
       const accessToken = await EncryptedStorage.getItem('accessToken');
-      const response = await API.put(`/folders/${folderId}`, requestBody, {
+      await API.put(`/folders/${folderId}`, requestBody, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -45,9 +46,19 @@ const RenameFolderScreen = ({navigation, route}: RenameFolderScreenProps) => {
         folderId: folderId,
         folderName: requestName,
       });
-    } catch (error) {
-      console.error(error);
-      Alert.alert('오류', '서버 요청 중 문제가 발생했습니다.');
+    } catch (err) {
+      const error = err as AxiosError;
+
+      if (error.response) {
+        const status = error.response.status;
+
+        if (status === 401) {
+          // 둘러보기 기능 추가 시 구현
+        }
+      } else {
+        console.error('Error deleting folder:', error);
+        Alert.alert('오류', '보관함 이름 변경 처리 중 문제가 발생했습니다.');
+      }
     }
   };
 

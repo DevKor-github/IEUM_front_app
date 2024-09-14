@@ -72,7 +72,7 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
         const accessToken = await EncryptedStorage.getItem('accessToken');
         setIsFetchingSavedPlaces(true);
 
-        const response = await API.get('/folders/default/places-list', {
+        const res = await API.get('/folders/default/places-list', {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
@@ -84,8 +84,8 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
           },
         });
 
-        const data = response.data.response.data;
-        const meta = response.data.response.meta;
+        const data = res.data.items;
+        const meta = res.data.meta;
 
         setSavedPlaces(prevSavedPlaces => [...prevSavedPlaces, ...data]);
 
@@ -108,7 +108,7 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
         const accessToken = await EncryptedStorage.getItem('accessToken');
         setIsFetchingPlaces(true);
 
-        const response = await API.get(
+        const res = await API.get(
           `/collections/${collectionId}/collection-places`,
           {
             headers: {
@@ -120,8 +120,8 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
             },
           },
         );
-        const data = response.data.response.data;
-        const meta = response.data.response.meta;
+        const data = res.data.items;
+        const meta = res.data.meta;
 
         setPlaces(prevPlaces => [...prevPlaces, ...data]);
 
@@ -144,7 +144,7 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      setFolders(res.data.response.data);
+      setFolders(res.data.items);
     }
     getFolder();
   }, [navigation]);
@@ -167,7 +167,7 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
     }
     try {
       const accessToken = await EncryptedStorage.getItem('accessToken');
-      const response = await API.post(
+      await API.post(
         '/folders/default/folder-places',
         {
           placeIds: [placeId],
@@ -206,7 +206,7 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
 
     try {
       const accessToken = await EncryptedStorage.getItem('accessToken');
-      const response = await API.post(
+      await API.post(
         '/folders/default/folder-places',
         {
           placeIds: selectedPlaces,
@@ -250,15 +250,11 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
       const requestBody = {
         placeIds: validPlaceIds,
       };
-      const response = await API.post(
-        `/folders/${folderId}/folder-places`,
-        requestBody,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
+      await API.post(`/folders/${folderId}/folder-places`, requestBody, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
         },
-      );
+      });
       setPlaces(prevPlaces =>
         prevPlaces.map(place =>
           validPlaceIds.includes(place.placeId)

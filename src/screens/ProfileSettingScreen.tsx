@@ -84,7 +84,7 @@ const ProfileSettingScreen = ({
           nickname: nickname,
         },
       });
-      setIsDuplicate(res.data.response.isDuplicate);
+      setIsDuplicate(res.data.isDuplicate);
     } catch (error) {
       console.error(error);
       setIsDuplicate(null);

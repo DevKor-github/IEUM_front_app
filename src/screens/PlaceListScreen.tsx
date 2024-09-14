@@ -52,7 +52,7 @@ const PlaceListScreen = ({navigation, route}: PlaceListScreenProps) => {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      setDefaultId(res.data.response.id);
+      setDefaultId(res.data.id);
     }
     getDefaultId();
   });
@@ -64,7 +64,7 @@ const PlaceListScreen = ({navigation, route}: PlaceListScreenProps) => {
       const accessToken = await EncryptedStorage.getItem('accessToken');
       setIsLoadingMore(true);
 
-      const response = await API.get('/folders/default/places-list', {
+      const res = await API.get('/folders/default/places-list', {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -76,8 +76,8 @@ const PlaceListScreen = ({navigation, route}: PlaceListScreenProps) => {
         },
       });
 
-      const data = response.data.response.data;
-      const meta = response.data.response.meta;
+      const data = res.data.items;
+      const meta = res.data.meta;
 
       setSavedPlaces(prev => [...prev, ...data]);
       setCursorId(meta.hasNextPage ? meta.nextCursorId : null);
@@ -115,7 +115,7 @@ const PlaceListScreen = ({navigation, route}: PlaceListScreenProps) => {
             const requestBody = {placeIds: selectedPlaces};
             try {
               const accessToken = await EncryptedStorage.getItem('accessToken');
-              const res = await API.delete(
+              await API.delete(
                 `/folders/${defaultId}/folder-places`,
                 {
                   headers: {

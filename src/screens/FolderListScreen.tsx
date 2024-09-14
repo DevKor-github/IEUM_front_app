@@ -21,6 +21,7 @@ import {API} from '../api/base';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import {HomeStackParamList} from '../../types';
 import {useFocusEffect} from '@react-navigation/native';
+import {AxiosError} from 'axios';
 
 export type FolderListScreenProps = StackScreenProps<
   HomeStackParamList,
@@ -49,7 +50,7 @@ const FolderListScreen = ({navigation, route}: FolderListScreenProps) => {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      setFolders(res.data.response.data);
+      setFolders(res.data.items);
     } catch (error) {
       console.error('Error fetching folders:', error);
       Alert.alert('오류', '보관함 데이터를 가져오는 중 오류가 발생했습니다.');
@@ -84,26 +85,41 @@ const FolderListScreen = ({navigation, route}: FolderListScreenProps) => {
               const accessToken = await EncryptedStorage.getItem('accessToken');
 
               for (const folderId of selectedFolders) {
-                const res = await API.delete(`/folders/${folderId}`, {
-                  headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                    'Content-Type': 'application/json',
-                  },
-                });
+                try {
+                  await API.delete(`/folders/${folderId}`, {
+                    headers: {
+                      Authorization: `Bearer ${accessToken}`,
+                      'Content-Type': 'application/json',
+                    },
+                  });
 
-                if (res.data.statusCode === 4002) {
-                  Alert.alert('디폴트 폴더는 삭제 풀가능합니다.');
-                } else {
                   setFolders(prevFolders =>
                     prevFolders.filter(folder => folder.id !== folderId),
                   );
+                } catch (err) {
+                  const error = err as AxiosError;
+
+                  if (error.response) {
+                    const status = error.response.status;
+
+                    if (status === 401) {
+                      // 둘러보기 기능 추가 시 구현
+                    }
+                  } else {
+                    console.error('Error deleting folder:', error);
+                    Alert.alert(
+                      '오류',
+                      '네트워크 문제로 보관함 삭제에 실패했습니다.',
+                    );
+                  }
                 }
               }
+
               setSelectedFolders([]);
               setIsSelecting(false);
             } catch (error) {
-              console.error('Error deleting folders:', error);
-              Alert.alert('오류', '보관함 삭제 중 문제가 발생했습니다.');
+              console.error('Error processing deletion:', error);
+              Alert.alert('오류', '보관함 삭제 처리 중 문제가 발생했습니다.');
             }
           },
         },

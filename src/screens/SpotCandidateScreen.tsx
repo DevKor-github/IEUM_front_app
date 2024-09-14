@@ -61,7 +61,7 @@ const SpotCandidateScreen = ({navigation}: SpotCandidateScreenProps) => {
             },
           });
           if (isActive) {
-            setUnviewedLinks(unviewedResponse.data.response.data);
+            setUnviewedLinks(unviewedResponse.data.items);
           }
 
           // Fetch viewed links
@@ -77,7 +77,7 @@ const SpotCandidateScreen = ({navigation}: SpotCandidateScreenProps) => {
             },
           );
           if (isActive) {
-            setViewedLinks(viewedResponse.data.response.data);
+            setViewedLinks(viewedResponse.data.items);
           }
         } catch (error) {
           console.error(error);
@@ -87,7 +87,6 @@ const SpotCandidateScreen = ({navigation}: SpotCandidateScreenProps) => {
       fetchLinks();
 
       return () => {
-        // Cleanup function to cancel any pending async operations
         isActive = false;
       };
     }, []),

@@ -35,7 +35,7 @@ const NewFolderScreen = ({navigation, route}: NewFolderScreenProps) => {
         name: requestName,
       };
       const accessToken = await EncryptedStorage.getItem('accessToken');
-      const response = await API.post('/folders', requestBody, {
+      await API.post('/folders', requestBody, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

@@ -65,12 +65,9 @@ const PreferenceAreaScreen = ({
       const area = areas.find(a => a.name === areaName);
       if (area) {
         const mainAreas = area.name.split('/');
-        const subAreas = area.subText.split('/');
 
         mainAreas.forEach(mainArea => {
-          subAreas.forEach(subArea => {
-            preferredRegion.push(`${mainArea.trim()}, ${subArea.trim()}`);
-          });
+          preferredRegion.push(`${mainArea.trim()}`);
         });
       }
     });

@@ -21,6 +21,7 @@ import FolderSavedPlaceNum from '../assets/folder-saved-place-num.svg';
 import {API} from '../api/base';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import {useFocusEffect} from '@react-navigation/native';
+import {AxiosError} from 'axios';
 
 export type HomeScreenProps = StackScreenProps<HomeStackParamList, 'Home'>;
 
@@ -68,7 +69,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       const accessToken = await EncryptedStorage.getItem('accessToken');
       setIsLoadingMore(true);
 
-      const response = await API.get('/folders/default/places-list', {
+      const res = await API.get('/folders/default/places-list', {
         headers: {Authorization: `Bearer ${accessToken}`},
         params: {
           take: 10,
@@ -78,8 +79,10 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         },
       });
 
-      const data = response.data.response.data;
-      const meta = response.data.response.meta;
+      console.log(res)
+
+      const data = res.data.items;
+      const meta = res.data.meta;
 
       setSavedPlaces(prev => [...prev, ...data]);
       setCursorId(meta.hasNextPage ? meta.nextCursorId : null);
@@ -98,7 +101,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
       const [profileRes, folderRes, unviewedLinksRes, viewedLinksRes] =
         await Promise.all([
-          API.get('/users/me/profile', {
+          API.get('/users/me', {
             headers: {Authorization: `Bearer ${accessToken}`},
           }),
           API.get('/folders', {
@@ -113,40 +116,45 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
             params: {cursorId: cursorId},
           }),
         ]);
-
       if (profileRes.status === 200) {
-        setUserName(profileRes.data.response.nickname);
+        setUserName(profileRes.data.nickname);
       }
 
       if (folderRes.status === 200) {
-        setFolders(folderRes.data.response.data);
+        setFolders(folderRes.data.items);
       }
-      const unviewedLinks = unviewedLinksRes.data.response.data;
-      const viewedLinks = viewedLinksRes.data.response.data;
+
+      const unviewedLinks = unviewedLinksRes.data.items;
+      const viewedLinks = viewedLinksRes.data.items;
 
       setUnviewedLinksCount(unviewedLinks.length);
 
       const totalUnViewedUnSavedPlaces = unviewedLinks.reduce(
-        (acc: number, link: LinkData) =>
-          acc + (link.collectionPlacesCount),
+        (acc: number, link: LinkData) => acc + link.collectionPlacesCount,
         0,
       );
 
       const totalViewedUnSavedPlaces = viewedLinks.reduce(
-        (acc: number, link: LinkData) =>
-          acc + (link.collectionPlacesCount),
+        (acc: number, link: LinkData) => acc + link.collectionPlacesCount,
         0,
       );
 
       setUnSavedPlacesCount(
-        totalUnViewedUnSavedPlaces + totalViewedUnSavedPlaces - savedPlaces.length,
+        totalUnViewedUnSavedPlaces +
+          totalViewedUnSavedPlaces -
+          savedPlaces.length,
       );
       fetchSavedPlaces();
-    } catch (error) {
-      console.error('Error fetching data:', error);
-      Alert.alert('Error', 'An error occurred while fetching data.');
+    } catch (err) {
+      const error = err as AxiosError;
+      if (error.response?.status === 401) {
+        navigation.navigate('ServiceAgreement');
+      } else {
+        console.error('Error fetching data:', error);
+        Alert.alert('Error', 'An error occurred while fetching data.');
+      }
     }
-  }, [fetchSavedPlaces]);
+  }, [fetchSavedPlaces, savedPlaces.length]);
 
   useFocusEffect(
     useCallback(() => {
@@ -198,7 +206,9 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         <View style={styles.profileSection}>
           <EmptyProfile />
           <Text style={styles.nicknameText}>{username} 님의 공간</Text>
-          <Pressable style={styles.editButton}>
+          <Pressable
+            style={styles.editButton}
+            onPress={() => navigation.navigate('ProfileEdit')}>
             <EditIcon />
             <Text style={styles.editText}>편집</Text>
           </Pressable>

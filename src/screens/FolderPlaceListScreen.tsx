@@ -23,6 +23,7 @@ import PlusIcon from '../assets/place-plus-icon.svg';
 import {API} from '../api/base';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import {HomeStackParamList} from '../../types';
+import {AxiosError} from 'axios';
 
 export type FolderPlaceListScreenProps = StackScreenProps<
   HomeStackParamList,
@@ -68,7 +69,7 @@ const FolderPlaceListScreen = ({
       const accessToken = await EncryptedStorage.getItem('accessToken');
       setIsLoadingMore(true);
 
-      const response = await API.get(`/folders/${folderId}/places-list`, {
+      const res = await API.get(`/folders/${folderId}/places-list`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -80,8 +81,8 @@ const FolderPlaceListScreen = ({
         },
       });
 
-      const data = response.data.response.data;
-      const meta = response.data.response.meta;
+      const data = res.data.items;
+      const meta = res.data.meta;
 
       setSavedPlaces(prev => [...prev, ...data]);
       setCursorId(meta.hasNextPage ? meta.nextCursorId : null);
@@ -119,7 +120,7 @@ const FolderPlaceListScreen = ({
             try {
               const requestBody = {placeIds: selectedPlaces};
               const accessToken = await EncryptedStorage.getItem('accessToken');
-              const res = await API.delete(
+              await API.delete(
                 `/folders/${folderId}/folder-places`,
                 {
                   headers: {
@@ -129,9 +130,22 @@ const FolderPlaceListScreen = ({
                 },
               );
               navigation.goBack();
-            } catch (error) {
-              console.error('Error deleting folder:', error);
-              Alert.alert('오류', '보관함 삭제 중 문제가 발생했습니다.');
+            } catch (err) {
+              const error = err as AxiosError;
+
+              if (error.response) {
+                const status = error.response.status;
+
+                if (status === 401) {
+                  // 둘러보기 기능 추가 시 구현
+                }
+              } else {
+                console.error('Error deleting places:', error);
+                Alert.alert(
+                  '오류',
+                  '선택된 장소 삭제 처리 중 문제가 발생했습니다.',
+                );
+              }
             }
           },
         },
@@ -161,7 +175,7 @@ const FolderPlaceListScreen = ({
       const requestBody = {
         placeIds: validPlaceIds,
       };
-      const response = await API.post(
+      await API.post(
         `/folders/${folderId}/folder-places`,
         requestBody,
         {
@@ -169,9 +183,6 @@ const FolderPlaceListScreen = ({
             Authorization: `Bearer ${accessToken}`,
           },
         },
-      );
-      setSavedPlaces(prevPlaces =>
-        prevPlaces.filter(place => !validPlaceIds.includes(place.id)),
       );
       setIsBottomSheetVisible(false);
       setSelectedPlaces([]);
@@ -191,7 +202,7 @@ const FolderPlaceListScreen = ({
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      setFolders(res.data.response.data);
+      setFolders(res.data.items);
     } catch (error) {
       console.error('Error fetching folders:', error);
       Alert.alert('Error', 'An error occurred while fetching folders.');
@@ -380,7 +391,7 @@ const FolderPlaceListScreen = ({
             onPress={() => {
               setIsBottomSheetVisible(true);
             }}>
-            <Text style={styles.bottomMenuTriggerText}>보관함 이동</Text>
+            <Text style={styles.bottomMenuTriggerText}>보관함 추가</Text>
           </Pressable>
         </Pressable>
       )}
@@ -473,22 +484,31 @@ const FolderPlaceListScreen = ({
                           const accessToken = await EncryptedStorage.getItem(
                             'accessToken',
                           );
-                          const res = await API.delete(`/folders/${folderId}`, {
+                          await API.delete(`/folders/${folderId}`, {
                             headers: {
                               Authorization: `Bearer ${accessToken}`,
+                              'Content-Type': 'application/json',
                             },
                           });
-                          if (res.data.statusCode === 4002) {
-                            Alert.alert('디폴트 폴더는 삭제 풀가능합니다.');
-                          }
                           navigation.goBack();
-                        } catch (error) {
-                          console.error('Error deleting folder:', error);
-                          Alert.alert(
-                            '오류',
-                            '보관함 삭제 중 문제가 발생했습니다.',
-                          );
+                        } catch (err) {
+                          const error = err as AxiosError;
+
+                          if (error.response) {
+                            const status = error.response.status;
+
+                            if (status === 401) {
+                              // 둘러보기 기능 추가 시 구현
+                            }
+                          } else {
+                            console.error('Error deleting folder:', error);
+                            Alert.alert(
+                              '오류',
+                              '보관함 삭제 처리 중 문제가 발생했습니다.',
+                            );
+                          }
                         }
+                        setIsSelecting(false);
                       },
                     },
                   ],
