@@ -13,53 +13,52 @@ import {StackScreenProps} from '@react-navigation/stack';
 import {HomeStackParamList} from '../../types';
 import {API} from '../api/base';
 import EncryptedStorage from 'react-native-encrypted-storage';
+import {AxiosError} from 'axios';
 
-export type LinkInputScreenProps = StackScreenProps<
+export type RenameFolderScreenProps = StackScreenProps<
   HomeStackParamList,
-  'LinkInput'
+  'RenameFolder'
 >;
 
 const dHeight = Dimensions.get('window').height;
 const dWidth = Dimensions.get('window').width;
 
-const LinkInputScreen = ({navigation, route}: LinkInputScreenProps) => {
-  const [requestUrl, setRequestUrl] = useState('');
+const RenameFolderScreen = ({navigation, route}: RenameFolderScreenProps) => {
+  const {folderId} = route.params;
+  const [requestName, setRequestName] = useState('');
 
   const onChangeUrlText = (inputText: string) => {
-    setRequestUrl(inputText);
+    setRequestName(inputText);
   };
 
-  const onSubmitUrl = async () => {
-    const uuid = await EncryptedStorage.getItem('uuid');
-
-    // 정규 표현식을 사용하여 URL 유효성 검사
-    const isInstagram = /instagram\.com/.test(requestUrl);
-    const isNaverBlog = /blog\.naver\.com/.test(requestUrl);
-
-    if (!isInstagram && !isNaverBlog) {
-      // URL이 Instagram이나 Naver Blog가 아닐 경우
-      navigation.navigate('LinkReject');
-      return;
-    }
-
-    const collectionType = isNaverBlog ? 1 : 0;
-
+  const onSubmitName = async () => {
     try {
       const requestBody = {
-        link: requestUrl,
+        name: requestName,
       };
       const accessToken = await EncryptedStorage.getItem('accessToken');
-      const response = await API.post('/crawling', requestBody, {
+      await API.put(`/folders/${folderId}`, requestBody, {
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken}`,
         },
       });
+      navigation.navigate('FolderPlaceList', {
+        folderId: folderId,
+        folderName: requestName,
+      });
+    } catch (err) {
+      const error = err as AxiosError;
 
-      navigation.navigate('Home');
-    } catch (error) {
-      console.error(error);
-      Alert.alert('오류', '서버 요청 중 문제가 발생했습니다.');
+      if (error.response) {
+        const status = error.response.status;
+
+        if (status === 401) {
+          // 둘러보기 기능 추가 시 구현
+        }
+      } else {
+        console.error('Error deleting folder:', error);
+        Alert.alert('오류', '보관함 이름 변경 처리 중 문제가 발생했습니다.');
+      }
     }
   };
 
@@ -75,7 +74,7 @@ const LinkInputScreen = ({navigation, route}: LinkInputScreenProps) => {
             alignItems: 'center',
             paddingHorizontal: 24,
           }}>
-          <Pressable onPress={() => navigation.navigate('Home')}>
+          <Pressable onPress={() => navigation.goBack()}>
             <Text
               style={{
                 fontSize: 17,
@@ -87,9 +86,9 @@ const LinkInputScreen = ({navigation, route}: LinkInputScreenProps) => {
             </Text>
           </Pressable>
           <Text style={{fontSize: 17, fontWeight: '500', lineHeight: 22}}>
-            링크 입력
+            내 보관함
           </Text>
-          <Pressable onPress={onSubmitUrl}>
+          <Pressable onPress={onSubmitName}>
             <Text
               style={{
                 fontSize: 17,
@@ -116,10 +115,12 @@ const LinkInputScreen = ({navigation, route}: LinkInputScreenProps) => {
               color: '#FF5570',
               lineHeight: 22,
             }}>
-            링크 추가하기
+            보관함 이름 변경
           </Text>
           <TextInput
             autoCapitalize="none"
+            placeholder="보관함 이름"
+            placeholderTextColor="#D9D9D9"
             onChangeText={onChangeUrlText}
             style={{
               width: dWidth - 48,
@@ -128,10 +129,10 @@ const LinkInputScreen = ({navigation, route}: LinkInputScreenProps) => {
               borderBottomWidth: 1,
               borderBottomColor: '#FF5570',
               color: 'black',
-              fontSize: 14,
-              fontWeight: '500',
+              fontSize: 19,
+              fontWeight: '600',
             }}
-            value={requestUrl}
+            value={requestName}
           />
         </View>
       </View>
@@ -151,4 +152,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LinkInputScreen;
+export default RenameFolderScreen;

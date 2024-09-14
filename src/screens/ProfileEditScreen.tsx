@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useCallback} from 'react';
 import {
   View,
   StyleSheet,
@@ -9,26 +9,28 @@ import {
   TextInput,
   Keyboard,
   TouchableWithoutFeedback,
+  ScrollView,
 } from 'react-native';
 import {StackScreenProps} from '@react-navigation/stack';
 import {useSetRecoilState} from 'recoil';
 import ProfileImageSetting from '../assets/profile-image-setting.svg';
+import BackButton from '../assets/back-button.svg';
 import userInfoAtom from '../recoil/user/index';
-import {RootStackParamList} from '../../types';
+import {HomeStackParamList} from '../../types';
 import {API} from '../api/base';
+import EncryptedStorage from 'react-native-encrypted-storage';
+import {useFocusEffect} from '@react-navigation/native';
+import {AxiosError} from 'axios';
 
-export type ProfileSettingScreenProps = StackScreenProps<
-  RootStackParamList,
-  'ProfileSetting'
+export type ProfileEditScreenProps = StackScreenProps<
+  HomeStackParamList,
+  'ProfileEdit'
 >;
 
 const dWidth = Dimensions.get('window').width;
 const dHeight = Dimensions.get('window').height;
 
-const ProfileSettingScreen = ({
-  navigation,
-  route,
-}: ProfileSettingScreenProps) => {
+const ProfileEditScreen = ({navigation, route}: ProfileEditScreenProps) => {
   const [nickname, setNickname] = useState('');
   const [birthDate, setBirthDate] = useState('');
   const [sex, setSelectedSex] = useState('');
@@ -49,6 +51,53 @@ const ProfileSettingScreen = ({
   const handleSexPress = (s: string) => {
     setSelectedSex(sex === s ? '' : s);
   };
+
+  const fetchUserProfile = useCallback(async () => {
+    try {
+      const accessToken = await EncryptedStorage.getItem('accessToken');
+      const res = await API.get('/users/me', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      setNickname(res.data.nickname);
+      setBirthDate(res.data.birthDate.slice(0, 10).split('-').join(''));
+      setSelectedSex(res.data.sex);
+      setUserInfo(prevState => ({
+        ...prevState,
+        nickname: res.data.nickname,
+        birthDate: res.data.birthDate.slice(0, 10).split('-').join(''),
+        sex:res.data.sex,
+        mbti: "",
+        preferredRegion: [""],
+        preferredCompanion: [""],
+        budgetStyle: 0,
+        planningStyle: 0,
+        scheduleStyle: 0,
+        destinationStyle1: 0,
+        destinationStyle2: 0,
+        destinationStyle3: 0
+      }))
+    } catch (err) {
+      const error = err as AxiosError;
+
+      if (error.response) {
+        const status = error.response.status;
+
+        if (status === 401) {
+          // 둘러보기 기능 추가 시 구현
+        }
+      } else {
+        console.error('Error deleting folder:', error);
+      }
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchUserProfile();
+    }, [fetchUserProfile]),
+  );
 
   useEffect(() => {
     const isBirthDateValid = birthDate.length === 8 && /^\d+$/.test(birthDate);
@@ -72,8 +121,6 @@ const ProfileSettingScreen = ({
         birthDate: bDate,
         sex: sex,
       }));
-
-      navigation.navigate('PreferenceStart');
     }
   };
 
@@ -96,20 +143,28 @@ const ProfileSettingScreen = ({
       <View style={styles.container}>
         <View style={styles.header}>
           <Pressable
+            style={{paddingRight: 115}}
             onPress={() => {
-              navigation.navigate('ServiceAgreement');
-            }}></Pressable>
+              navigation.navigate('Home');
+            }}>
+            <BackButton />
+          </Pressable>
           <Text style={styles.headerText}>프로필 설정</Text>
+          <Pressable style={{paddingLeft: 90}}>
+            <Text style={{fontSize: 13, fontWeight: '500', color: '#A4A4A4'}}>
+              로그아웃
+            </Text>
+          </Pressable>
         </View>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View>
-            <View style={styles.titleContainer}>
-              <Text style={styles.titleText}>
-                프로필 설정,{'\n'}1분이면 끝나요😎
-              </Text>
-            </View>
-            <View style={{alignItems: 'center'}}>
-              <ProfileImageSetting />
+        <ScrollView
+          style={{
+            paddingTop: 45,
+            paddingBottom: 20,
+            overflow: 'scroll',
+          }}>
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View>
+              <ProfileImageSetting style={{alignSelf: 'center'}} />
               <View style={[styles.inputContainer, {marginBottom: 35}]}>
                 <Text style={styles.inputText}>닉네임</Text>
                 <View
@@ -201,7 +256,13 @@ const ProfileSettingScreen = ({
               </View>
               <View style={styles.inputContainer}>
                 <Text style={styles.inputText}>성별</Text>
-                <View style={{flexDirection: 'row', gap: 10, marginTop: 12}}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    gap: 10,
+                    marginTop: 12,
+                    paddingBottom: 35,
+                  }}>
                   <Pressable
                     onPress={() => handleSexPress('M')}
                     style={{
@@ -246,26 +307,158 @@ const ProfileSettingScreen = ({
                   </Pressable>
                 </View>
               </View>
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputText}>나의 취향 찾기</Text>
+                <View
+                  style={{
+                    width: dWidth - 48,
+                    borderRadius: 6,
+                    backgroundColor: '#F8F8F8',
+                    paddingVertical: 15,
+                    paddingHorizontal: 20,
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexDirection: 'row',
+                    marginTop: 10,
+                  }}>
+                  <Text style={{fontSize: 15, fontWeight: '600'}}>
+                    나의 MBTI는?
+                  </Text>
+                  <View
+                    style={{
+                      paddingVertical: 6,
+                      paddingHorizontal: 12,
+                      backgroundColor: '#008AFF14',
+                      borderRadius: 35,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}>
+                    <Text
+                      style={{
+                        fontSize: 13,
+                        fontWeight: '600',
+                        color: '#008AFF',
+                      }}>
+                      ISTP
+                    </Text>
+                  </View>
+                </View>
+                <View
+                  style={{
+                    width: dWidth - 48,
+                    borderRadius: 6,
+                    backgroundColor: '#F8F8F8',
+                    paddingVertical: 15,
+                    paddingHorizontal: 20,
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexDirection: 'row',
+                    marginTop: 5,
+                  }}>
+                  <Text style={{fontSize: 15, fontWeight: '600'}}>
+                    나의 관심지역은?
+                  </Text>
+                  <View
+                    style={{
+                      paddingVertical: 6,
+                      paddingHorizontal: 12,
+                      backgroundColor: '#008AFF14',
+                      borderRadius: 35,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}>
+                    <Text
+                      style={{
+                        fontSize: 13,
+                        fontWeight: '600',
+                        color: '#008AFF',
+                      }}>
+                      서울 외 3
+                    </Text>
+                  </View>
+                </View>
+                <View
+                  style={{
+                    width: dWidth - 48,
+                    borderRadius: 6,
+                    backgroundColor: '#F8F8F8',
+                    paddingVertical: 15,
+                    paddingHorizontal: 20,
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexDirection: 'row',
+                    marginTop: 5,
+                  }}>
+                  <Text style={{fontSize: 15, fontWeight: '600'}}>
+                    나의 여행 스타일은?
+                  </Text>
+                  <View
+                    style={{
+                      paddingVertical: 6,
+                      paddingHorizontal: 12,
+                      backgroundColor: '#008AFF14',
+                      borderRadius: 35,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}>
+                    <Text
+                      style={{
+                        fontSize: 13,
+                        fontWeight: '600',
+                        color: '#008AFF',
+                      }}>
+                      변경하기???
+                    </Text>
+                  </View>
+                </View>
+                <View
+                  style={{
+                    width: dWidth - 48,
+                    borderRadius: 6,
+                    backgroundColor: '#F8F8F8',
+                    paddingVertical: 15,
+                    paddingHorizontal: 20,
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexDirection: 'row',
+                    marginTop: 5,
+                    marginBottom: 40
+                  }}>
+                  <Text style={{fontSize: 15, fontWeight: '600'}}>
+                    주로 누구랑 떠나시나요?
+                  </Text>
+                  <View
+                    style={{
+                      paddingVertical: 6,
+                      paddingHorizontal: 12,
+                      backgroundColor: '#008AFF14',
+                      borderRadius: 35,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}>
+                    <Text
+                      style={{
+                        fontSize: 13,
+                        fontWeight: '600',
+                        color: '#008AFF',
+                      }}>
+                      가족 외 1
+                    </Text>
+                  </View>
+                </View>
+              </View>
+              <Pressable
+                onPress={handleNextPress}
+                style={[
+                  styles.saveButton,
+                  {backgroundColor: isFormValid ? '#FF5570' : '#FF5570'},
+                ]}
+                disabled={isFormValid}>
+                <Text style={styles.saveButtonText}>저장하기</Text>
+              </Pressable>
             </View>
-          </View>
-        </TouchableWithoutFeedback>
-        <View
-          style={{
-            position: 'absolute',
-            height: dHeight - 90,
-            alignItems: 'center',
-            justifyContent: 'flex-end',
-          }}>
-          <Pressable
-            onPress={handleNextPress}
-            style={[
-              styles.nextButton,
-              {backgroundColor: isFormValid ? '#FF5570' : '#FFC1C1'},
-            ]}
-            disabled={!isFormValid}>
-            <Text style={styles.nextButtonText}>확인</Text>
-          </Pressable>
-        </View>
+          </TouchableWithoutFeedback>
+        </ScrollView>
       </View>
     </SafeAreaView>
   );
@@ -286,7 +479,7 @@ const styles = StyleSheet.create({
     height: 52,
     width: dWidth,
     alignItems: 'center',
-    justifyContent: 'center',
+    paddingHorizontal: 24,
     borderBottomColor: '#1212140D',
     borderBottomWidth: 1,
   },
@@ -308,26 +501,26 @@ const styles = StyleSheet.create({
   inputContainer: {
     marginTop: 14,
     gap: 12,
-    width: dWidth - 48,
+    width: dWidth - 46,
   },
   inputText: {
     fontSize: 13,
     fontWeight: '600',
     color: '#C1C1C1',
   },
-  nextButton: {
-    position: 'absolute',
+  saveButton: {
     width: 345,
     height: 50,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 8,
+    marginBottom: 70,
   },
-  nextButtonText: {
+  saveButtonText: {
     fontSize: 15,
     fontWeight: '600',
     color: 'white',
   },
 });
 
-export default ProfileSettingScreen;
+export default ProfileEditScreen;

@@ -55,14 +55,14 @@ const LoginScreen = ({navigation, route}: LoginScreenProps) => {
 
     if (res.status === 201) {
       console.log('Kakao 로그인 성공');
-      await EncryptedStorage.setItem('uuid', res.data.response.uuid);
+      await EncryptedStorage.setItem('uuid', res.data.uuid);
       await EncryptedStorage.setItem(
         'accessToken',
-        res.data.response.accessToken,
+        res.data.accessToken,
       );
       await EncryptedStorage.setItem(
         'refreshToken',
-        res.data.response.refreshToken,
+        res.data.refreshToken,
       );
       navigation.navigate('Home');
     } else {
@@ -120,14 +120,14 @@ const LoginScreen = ({navigation, route}: LoginScreenProps) => {
 
     if (res.status === 201) {
       console.log('Naver 로그인 성공');
-      await EncryptedStorage.setItem('uuid', res.data.response.uuid);
+      await EncryptedStorage.setItem('uuid', res.data.uuid);
       await EncryptedStorage.setItem(
         'accessToken',
-        res.data.response.accessToken,
+        res.data.accessToken,
       );
       await EncryptedStorage.setItem(
         'refreshToken',
-        res.data.response.refreshToken,
+        res.data.refreshToken,
       );
       navigation.navigate('Home');
     } else {
@@ -194,14 +194,14 @@ const LoginScreen = ({navigation, route}: LoginScreenProps) => {
 
         if (res.status === 201) {
           console.log('Apple 로그인 성공');
-          await EncryptedStorage.setItem('uuid', res.data.response.uuid);
+          await EncryptedStorage.setItem('uuid', res.data.uuid);
           await EncryptedStorage.setItem(
             'accessToken',
-            res.data.response.accessToken,
+            res.data.accessToken,
           );
           await EncryptedStorage.setItem(
             'refreshToken',
-            res.data.response.refreshToken,
+            res.data.refreshToken,
           );
           navigation.navigate('Home');
         } else {

@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Alert,
   Dimensions,
+  Modal,
 } from 'react-native';
 import {StackScreenProps} from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
@@ -17,9 +18,12 @@ import EncryptedStorage from 'react-native-encrypted-storage';
 import CloseButton from '../assets/close-button.svg';
 import SaveToFolder from '../assets/save-to-folder.svg';
 import SavedToFolder from '../assets/saved-to-folder.svg';
+import PlusIcon from '../assets/place-plus-icon.svg';
 import CheckedSpot from '../assets/checked-spot.svg';
 import EmptySpot from '../assets/empty-circle.svg';
 import SelectIcon from '../assets/select-icon.svg';
+import SavedPlaceNum from '../assets/saved-place-num.svg';
+import SpotSaveIcon from '../assets/spot-save-icon.svg';
 import {useFocusEffect} from '@react-navigation/native';
 
 export type SpotSaveScreenProps = StackScreenProps<
@@ -35,11 +39,11 @@ interface Place {
   isSaved: boolean;
 }
 
-interface SavedPlace {
+interface Folder {
   id: number;
   name: string;
-  simplifiedAddress: string;
-  mappedCategory: string;
+  type: number;
+  placeCnt: number;
 }
 
 const dWidth = Dimensions.get('window').width;
@@ -47,35 +51,50 @@ const dWidth = Dimensions.get('window').width;
 const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
   const {collectionId, collectionContent, collectionType} = route.params;
   const [places, setPlaces] = useState<Place[]>([]);
-  const [savedPlaces, setSavedPlaces] = useState<SavedPlace[]>([]);
+  const [savedPlaces, setSavedPlaces] = useState<Folder[]>([]);
   const [selectedPlaces, setSelectedPlaces] = useState<number[]>([]);
   const [isSelecting, setIsSelecting] = useState(false);
+  const [isBottomSheetVisible, setIsBottomSheetVisible] = useState(false);
+  const [folders, setFolders] = useState<Folder[]>([]);
+  const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null);
+  const [savedPlacesCursorId, setSavedPlacesCursorId] = useState<number | null>(
+    0,
+  );
+  const [placesCursorId, setPlacesCursorId] = useState<number | null>(0);
+  const [isFetchingSavedPlaces, setIsFetchingSavedPlaces] = useState(false);
+  const [isFetchingPlaces, setIsFetchingPlaces] = useState(false);
 
   useFocusEffect(() => {
     const fetchSavedPlaces = async () => {
+      if (isFetchingSavedPlaces || savedPlacesCursorId === null) return;
+
       try {
         const accessToken = await EncryptedStorage.getItem('accessToken');
-        const response = await API.get('/folders/default/places-list', {
+        setIsFetchingSavedPlaces(true);
+
+        const res = await API.get('/folders/default/places-list', {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
           params: {
-            take: 10, // 한번에 가져올 장소의 개수, 필요에 따라 조정
-            cursorId: 0, // 첫 페이지를 불러올 때는 0
+            take: 10,
+            cursorId: savedPlacesCursorId,
             addressList: [],
             categoryList: [],
           },
         });
 
-        if (response.status === 200) {
-          const data = response.data.response.data;
-          setSavedPlaces(data);
-        } else {
-          Alert.alert('Error', 'Failed to fetch saved places.');
-        }
+        const data = res.data.items;
+        const meta = res.data.meta;
+
+        setSavedPlaces(prevSavedPlaces => [...prevSavedPlaces, ...data]);
+
+        setSavedPlacesCursorId(meta.hasNextPage ? meta.nextCursorId : null);
       } catch (error) {
         console.error('Error fetching saved places:', error);
         Alert.alert('Error', 'An error occurred while fetching saved places.');
+      } finally {
+        setIsFetchingSavedPlaces(false);
       }
     };
     fetchSavedPlaces();
@@ -83,9 +102,13 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
 
   useEffect(() => {
     const fetchPlaces = async () => {
+      if (isFetchingPlaces || placesCursorId === null) return;
+
       try {
         const accessToken = await EncryptedStorage.getItem('accessToken');
-        const response = await API.get(
+        setIsFetchingPlaces(true);
+
+        const res = await API.get(
           `/collections/${collectionId}/collection-places`,
           {
             headers: {
@@ -93,18 +116,38 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
             },
             params: {
               collectionId: collectionId,
+              cursorId: placesCursorId,
             },
           },
         );
-        const data = response.data.response.data;
-        setPlaces(data);
+        const data = res.data.items;
+        const meta = res.data.meta;
+
+        setPlaces(prevPlaces => [...prevPlaces, ...data]);
+
+        setPlacesCursorId(meta.hasNextPage ? meta.nextCursorId : null);
       } catch (error) {
         console.error('Error fetching places:', error);
         Alert.alert('Error', 'An error occurred while fetching places.');
+      } finally {
+        setIsFetchingPlaces(false);
       }
     };
     fetchPlaces();
-  }, [collectionId]);
+  }, [collectionId, placesCursorId]);
+
+  useEffect(() => {
+    async function getFolder() {
+      const accessToken = await EncryptedStorage.getItem('accessToken');
+      const res = await API.get('/folders', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      setFolders(res.data.items);
+    }
+    getFolder();
+  }, [navigation]);
 
   const toggleSelection = (placeId: number) => {
     setSelectedPlaces(prevSelected =>
@@ -122,10 +165,9 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
       Alert.alert('이미 저장된 장소입니다');
       return;
     }
-
     try {
       const accessToken = await EncryptedStorage.getItem('accessToken');
-      const response = await API.post(
+      await API.post(
         '/folders/default/folder-places',
         {
           placeIds: [placeId],
@@ -136,15 +178,19 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
           },
         },
       );
-      console.log(response);
       setPlaces(prevPlaces =>
         prevPlaces.map(place =>
-          place.placeId === placeId ? {...place, isSaved: true} : place,
+          selectedPlaces.includes(place.placeId)
+            ? {...place, isSaved: true}
+            : place,
         ),
       );
+      setSelectedPlaces([placeId]);
+      setIsSelecting(false);
+      setIsBottomSheetVisible(true);
     } catch (error) {
-      console.error('Error saving place:', error);
-      Alert.alert('Error', 'An error occurred while saving the place.');
+      console.error('Error saving places:', error);
+      Alert.alert('Error', 'An error occurred while saving selected places.');
     }
   };
 
@@ -160,7 +206,7 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
 
     try {
       const accessToken = await EncryptedStorage.getItem('accessToken');
-      const response = await API.post(
+      await API.post(
         '/folders/default/folder-places',
         {
           placeIds: selectedPlaces,
@@ -171,7 +217,6 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
           },
         },
       );
-      console.log(response);
       setPlaces(prevPlaces =>
         prevPlaces.map(place =>
           selectedPlaces.includes(place.placeId)
@@ -179,11 +224,51 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
             : place,
         ),
       );
-      setSelectedPlaces([]);
       setIsSelecting(false);
+      setIsBottomSheetVisible(true);
     } catch (error) {
       console.error('Error saving places:', error);
       Alert.alert('Error', 'An error occurred while saving selected places.');
+    }
+  };
+
+  const saveToSelectedFolder = async (folderId: number) => {
+    try {
+      const accessToken = await EncryptedStorage.getItem('accessToken');
+
+      if (selectedPlaces.length === 0) {
+        Alert.alert('Error', 'No places selected or invalid place ID.');
+        return;
+      }
+      const validPlaceIds = selectedPlaces.filter(
+        id => id !== null && id !== undefined,
+      );
+      if (validPlaceIds.length === 0) {
+        Alert.alert('Error', 'Invalid place IDs.');
+        return;
+      }
+      const requestBody = {
+        placeIds: validPlaceIds,
+      };
+      await API.post(`/folders/${folderId}/folder-places`, requestBody, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      setPlaces(prevPlaces =>
+        prevPlaces.map(place =>
+          validPlaceIds.includes(place.placeId)
+            ? {...place, isSaved: true}
+            : place,
+        ),
+      );
+      setIsBottomSheetVisible(false);
+      setSelectedPlaces([]);
+      setSelectedFolderId(null);
+      setIsSelecting(false);
+    } catch (error) {
+      console.error('Error saving to folder:', error);
+      Alert.alert('Error', 'An error occurred while saving the place.');
     }
   };
 
@@ -247,6 +332,37 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
         </Pressable>
       )}
     </View>
+  );
+
+  const renderFolderItem = ({item}: {item: Folder}) => (
+    <Pressable
+      style={styles.folderItem}
+      onPress={() => {
+        setSelectedFolderId(item.id);
+        setTimeout(() => {
+          setSelectedFolderId(null);
+        }, 500);
+        setIsBottomSheetVisible(false);
+        saveToSelectedFolder(item.id);
+      }}>
+      <View style={styles.folderInfoContainer}>
+        <View style={styles.folderIcon} />
+        <View>
+          <Text style={styles.folderName}>{item.name}</Text>
+          <View style={styles.folderDetailContainer}>
+            <SavedPlaceNum />
+            <Text style={styles.folderPlaceCnt}>
+              저장한 장소 · {item.placeCnt}곳
+            </Text>
+          </View>
+        </View>
+        {selectedFolderId === item.id ? (
+          <CheckedSpot style={{marginLeft: 'auto'}} />
+        ) : (
+          <PlusIcon style={{marginLeft: 'auto'}} />
+        )}
+      </View>
+    </Pressable>
   );
 
   return (
@@ -338,7 +454,110 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
               )}
             </View>
           }
+          onEndReached={() => {
+            if (!isFetchingPlaces && placesCursorId !== null) {
+              setPlacesCursorId(placesCursorId);
+            }
+          }}
+          onEndReachedThreshold={0.5}
         />
+
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={isBottomSheetVisible}
+          onRequestClose={() => {
+            setIsBottomSheetVisible(false);
+            setSelectedFolderId(null);
+          }}>
+          <Pressable
+            style={styles.modalOverlay}
+            onPress={() => {
+              setIsBottomSheetVisible(false);
+              setSelectedFolderId(null);
+            }}>
+            <View style={styles.bottomSheet}>
+              <View style={styles.bottomSheetContent}>
+                <View
+                  style={{
+                    marginTop: 15,
+                    marginHorizontal: 5,
+                    marginBottom: 25,
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-end',
+                  }}>
+                  <Text style={styles.bottomSheetTitle}>내 보관함</Text>
+                  <Pressable>
+                    <Text
+                      style={{
+                        fontSize: 13,
+                        fontWeight: '600',
+                        color: '#008AFF',
+                      }}>
+                      새 보관함
+                    </Text>
+                  </Pressable>
+                </View>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    marginHorizontal: 5,
+                  }}>
+                  <View
+                    style={{
+                      width: 50,
+                      height: 50,
+                      backgroundColor: 'grey',
+                      borderRadius: 10,
+                      marginRight: 10,
+                    }}
+                  />
+                  <View>
+                    <Text style={{fontSize: 16, fontWeight: '600'}}>
+                      Default
+                    </Text>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        gap: 5,
+                        alignItems: 'center',
+                      }}>
+                      <SavedPlaceNum />
+                      <Text
+                        style={{
+                          fontSize: 14,
+                          fontWeight: '400',
+                          color: '#A4A4A4',
+                        }}>
+                        저장한 장소 · 곳
+                      </Text>
+                    </View>
+                  </View>
+                  <SpotSaveIcon style={{marginLeft: 'auto'}} />
+                </View>
+
+                <View
+                  style={{
+                    backgroundColor: '#EFEFEF',
+                    height: 1,
+                    width: 320,
+                    marginTop: 20,
+                    marginBottom: 25,
+                    alignSelf: 'center',
+                  }}
+                />
+
+                <FlatList
+                  data={folders}
+                  keyExtractor={item => item.id.toString()}
+                  renderItem={renderFolderItem}
+                />
+              </View>
+            </View>
+          </Pressable>
+        </Modal>
       </View>
     </SafeAreaView>
   );
@@ -515,6 +734,77 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     color: '#FFF',
+  },
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(18, 18, 18, 0.5)',
+  },
+  bottomSheet: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  bottomSheetContent: {
+    height: '45%',
+    backgroundColor: '#FFF',
+    borderTopLeftRadius: 15,
+    borderTopRightRadius: 15,
+    paddingHorizontal: 24,
+    paddingVertical: 18,
+  },
+  bottomSheetTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  folderItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EFEFEF',
+  },
+  folderInfoContainer: {
+    flexDirection: 'row',
+    width: dWidth - 58,
+    alignItems: 'center',
+    marginHorizontal: 5,
+  },
+  folderIcon: {
+    width: 50,
+    height: 50,
+    backgroundColor: 'grey',
+    borderRadius: 10,
+    marginRight: 10,
+  },
+  folderName: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  folderDetailContainer: {
+    flexDirection: 'row',
+    gap: 5,
+    alignItems: 'center',
+  },
+  folderPlaceCnt: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: '#A4A4A4',
+  },
+  bottomSheetButton: {
+    marginTop: 15,
+    backgroundColor: '#FF5570',
+    paddingVertical: 12,
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  bottomSheetButtonText: {
+    fontSize: 14,
+    color: '#FFF',
+    fontWeight: '700',
   },
 });
 

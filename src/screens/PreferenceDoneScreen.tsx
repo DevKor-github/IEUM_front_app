@@ -38,22 +38,22 @@ const PreferenceDoneScreen = ({
         mbti: userInfo.mbti,
         preferredRegion: userInfo.preferredRegion,
         preferredCompanion: userInfo.preferredCompanion,
-        budgetStyle: userInfo.budgetStyle,
-        planningStyle: userInfo.planningStyle,
-        scheduleStyle: userInfo.scheduleStyle,
-        destinationStyle1: userInfo.destinationStyle1,
-        destinationStyle2: userInfo.destinationStyle2,
-        destinationStyle3: userInfo.destinationStyle3,
+        cheepOrExpensive: userInfo.budgetStyle,
+        plannedOrImprovise: userInfo.planningStyle,
+        tightOrLoose: userInfo.scheduleStyle,
+        popularOrLocal: userInfo.destinationStyle1,
+        natureOrCity: userInfo.destinationStyle2,
+        restOrActivity: userInfo.destinationStyle3,
       };
+      console.log(requestBody)
       const accessToken = await EncryptedStorage.getItem('accessToken');
-      const response = await API.put('/users/me/info', requestBody, {
+      const res = await API.put('/users/me', requestBody, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      console.log(response);
-      console.log(response.data);
-      if (response.status === 201) {
+      console.log(res)
+      if (res.status === 201) {
         console.log('정보 입력 성공!');
       }
     }
