@@ -8,17 +8,21 @@ import {
 } from 'react-native';
 import LocationIcon from '../assets/location-icon.svg';
 import SaveFinIcon from '../assets/save-fin-icon.svg';
-import BookmarkIcon from '../assets/bookmark-icon.svg';
+import BookmarkIcon from '../assets/bookmark-filled-icon.svg';
 import CloseIcon from '../assets/close-icon.svg';
 import CurrentLocationIcon from '../assets/current-location-icon.svg';
 
 import {BottomSheetModal, BottomSheetView} from '@gorhom/bottom-sheet';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {IPlace} from '../recoil/place/atom';
-import {useRecoilValue, useSetRecoilState} from 'recoil';
+import placeAtom, {IPlace} from '../recoil/place/atom';
+import {useRecoilState, useRecoilValue, useSetRecoilState} from 'recoil';
 import placeWithFilter from '../recoil/place/withFilter';
 import categoryAtom from '../recoil/category';
-import {Categories} from '../recoil/category/atom';
+import {
+  Categories,
+  mapEnumToServerCategory,
+  mapServerCategoryToEnum,
+} from '../recoil/category/atom';
 import folderAtom, {
   folderWithSelected,
   selectedFolderAtom,
@@ -26,29 +30,44 @@ import folderAtom, {
 import {IFolder} from '../recoil/folder/atom';
 import ShareButton from './ShareButton';
 import PlaceList from './PlaceList';
-import {placeWithFolder} from '../recoil/place';
 import CircleButton from './CircleButton';
 import regionAtom from '../recoil/region';
 import {Regions} from '../recoil/region/atom';
+import {API} from '../api/base';
 
 export interface IPlaceBottomSheet {
   bottomSheetModalRef: React.RefObject<BottomSheetModal>;
   isModalOpen: boolean;
   setIsModalOpen: (open: boolean) => void;
+  pressPlace: (index: number) => void;
 }
 
 type Mode = 'SAVED_PLACED' | 'FOLDER';
 const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
   const {bottomSheetModalRef, isModalOpen, setIsModalOpen} = props;
-  const filteredPlace: IPlace[] = useRecoilValue(placeWithFilter);
+  // const filteredPlace: IPlace[] = useRecoilValue(placeWithFilter);
   const categories: Categories[] = useRecoilValue(categoryAtom);
   const regions: Regions[] = useRecoilValue(regionAtom);
-  const folders: IFolder[] = useRecoilValue(folderAtom);
-  const selectedFolder = useRecoilValue(folderWithSelected);
-  const placeInFolder = useRecoilValue(placeWithFolder);
+
   const setSelectedFolderIndex = useSetRecoilState(selectedFolderAtom);
+  const selectedFolder = useRecoilValue(folderWithSelected);
+  const [folders, setFolders] = useRecoilState(folderAtom);
+  // const placeInFolder = useRecoilValue(placeWithFolder);
+
+  const [places, setPlaces] = useRecoilState(placeAtom);
 
   const [mode, setMode] = useState<Mode>('SAVED_PLACED');
+  const [cursor, setCursor] = useState<number>(-1);
+  const [hasNextPage, setHasNextPage] = useState<boolean>(true);
+  const [statesReady, setStatesReady] = useState(false); // New state to track when updates are done
+
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const [placeInFolder, setPlaceInFolder] = useState<IPlace[]>([]);
+  const [folderCursor, setFolderCursor] = useState<number>(-1);
+  const [hasNextPageFolderPlace, setHasNextPageFolderPlace] =
+    useState<boolean>(true);
+
   // const [isModalOpen, setIsModalOpen] = useState(false);
 
   // variables
@@ -66,12 +85,108 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
   }, []);
 
   useEffect(() => {
+    // getPlaceList();
+    getFolderList();
+  }, []);
+  useEffect(() => {
+    // Reset the states
+    setHasNextPage(true);
+    setCursor(-1);
+    setPlaces([]);
+
+    // Indicate that states have been set
+    setStatesReady(true);
+
+    console.log(categories);
+  }, [categories, regions]); // Runs when `categories` changes
+
+  // Another effect for calling `getPlaceList` once the states are updated
+  useEffect(() => {
+    if (statesReady) {
+      getPlaceList(categories, regions);
+      setStatesReady(false); // Reset statesReady to prevent future triggers
+    }
+  }, [statesReady, categories, regions]); // Runs when `statesReady` is true
+
+  useEffect(() => {
     if (props.isModalOpen) {
       bottomSheetModalRef.current?.present();
     } else {
       bottomSheetModalRef.current?.close();
     }
   });
+  const getFolderList = async () => {
+    const res = await API.get('/folders');
+    const {items, meta} = res.data;
+    const folderList: IFolder[] = items.map((item: any) => {
+      return {
+        id: item.id,
+        title: item.name,
+        imageUrl: '',
+        totalCount: item.placeCnt,
+      };
+    });
+    console.log(folderList);
+    setFolders(folderList);
+  };
+
+  const createUrlWithCategories = (baseUrl: string, categoryList: string[]) => {
+    const params = new URLSearchParams();
+    categoryList.forEach(category => params.append('categoryList', category));
+    return `${baseUrl}?${params.toString()}`;
+  };
+
+  const getPlaceList = async (
+    categories?: Categories[] = undefined,
+    regions?: Regions[] = undefined,
+  ) => {
+    if (loading || !hasNextPage) return;
+
+    setLoading(true);
+    const params = new URLSearchParams();
+    params.append('take', '10');
+    // let params: {take: number; cursorId?: number} = {take: 10};
+
+    if (cursor > 0) {
+      // params = {...params, cursorId: cursor};
+      params.append('cursorId', cursor.toString());
+    }
+    if (categories?.length > 0) {
+      categories?.forEach(category =>
+        params.append('categoryList', mapEnumToServerCategory(category)),
+      );
+    }
+    if (regions?.length > 0) {
+      regions?.forEach(region => params.append('addressList', region));
+    }
+
+    API.get(`/folders/default/places-list?${params.toString()}`)
+      .then(res => {
+        const {items, meta} = res.data;
+        setHasNextPage(meta.hasNextPage);
+        setCursor(meta.nextCursorId);
+        const placeList: IPlace[] = items.map((place: any) => {
+          const markerCategory = mapServerCategoryToEnum(place.mappedCategory);
+          return {
+            id: place.id,
+            name: place.name, // Name of the place
+            category: markerCategory, // Category of the place, e.g., "Restaurant"
+            simplifiedAddress: place.simplifiedAddress, // Category of the place, e.g., "Restaurant"
+            placeImages: [
+              {
+                url: place.imageUrl,
+                authorName: '',
+                authorUri: '',
+              },
+            ],
+          };
+        });
+        setPlaces(prev => [...prev, ...placeList]);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
 
   const handleTabPress = (selectedMode: Mode) => {
     setMode(selectedMode);
@@ -85,7 +200,7 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
             <View style={styles.topSectionSubTitleContainer}>
               <BookmarkIcon />
               <Text style={styles.topSectionSubTitle}>
-                저장한 장소 · {filteredPlace.length}곳
+                저장한 장소 · {places.length}곳
               </Text>
             </View>
           </View>
@@ -141,8 +256,10 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
         <PlaceList
           placeList={placeInFolder}
           onPress={index => {
-            console.log(index);
+            props.pressPlace(index);
           }}
+          loading={loading}
+          load={() => getPlaceInFolder(selectedFolder?.id)}
         />
       );
     }
@@ -158,20 +275,71 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
   const renderSavedPlace = () => {
     return (
       <PlaceList
-        placeList={filteredPlace}
+        placeList={places}
         onPress={index => {
-          console.log(index);
+          props.pressPlace(index);
         }}
+        loading={loading}
+        load={getPlaceList}
       />
     );
   };
 
+  const getPlaceInFolder = (id: number) => {
+    if (loading || !hasNextPageFolderPlace) return;
+
+    setLoading(true);
+    let params: {take: number; cursorId?: number} = {take: 10};
+
+    if (folderCursor > 0) {
+      params = {...params, cursorId: folderCursor};
+    }
+
+    API.get(`/folders/${id}/places-list`, {params})
+      .then(res => {
+        const {items, meta} = res.data;
+        setHasNextPageFolderPlace(meta.hasNextPage);
+        setFolderCursor(meta.nextCursorId);
+        const placeList: IPlace[] = items.map((place: any) => {
+          const markerCategory = mapServerCategoryToEnum(place.mappedCategory);
+          return {
+            id: place.id,
+            name: place.name, // Name of the place
+            category: markerCategory, // Category of the place, e.g., "Restaurant"
+            simplifiedAddress: place.simplifiedAddress, // Category of the place, e.g., "Restaurant"
+            placeImages: [
+              {
+                url: place.imageUrl,
+                authorName: '',
+                authorUri: '',
+              },
+            ],
+          };
+        });
+        setPlaceInFolder(prev => [...prev, ...placeList]);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+
+  const pressFolder = (id: number) => {
+    setFolderCursor(-1);
+    setHasNextPageFolderPlace(true);
+    setSelectedFolderIndex(id);
+    getPlaceInFolder(id);
+  };
+
   const renderFolder = () => {
     const renderItem = ({item}: {item: IFolder}) => (
-      <TouchableOpacity onPress={() => setSelectedFolderIndex(item.id)}>
+      <TouchableOpacity onPress={() => pressFolder(item.id)}>
         <View style={styles.itemContainer}>
           <Image
-            source={require('../assets/test-place.png')}
+            source={
+              item?.imageUrl
+                ? {uri: item?.imageUrl}
+                : require('../assets/unloaded-image.png')
+            }
             style={styles.itemImage}
           />
           <View style={styles.itemTextContainer}>

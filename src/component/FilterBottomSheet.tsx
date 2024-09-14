@@ -63,10 +63,6 @@ const FilterBottomSheet = (props: IFilterBottomSheet) => {
     }
   });
 
-  useEffect(() => {
-    console.log(localSelectedRegions);
-    console.log(localSelectedCategories);
-  }, []);
   const renderTopSection = () => {
     return (
       <View style={styles.topSectionContainer}>

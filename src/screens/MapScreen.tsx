@@ -7,13 +7,14 @@ import {
   View,
 } from 'react-native';
 import {
+  Camera,
   NaverMapMarkerOverlay,
   NaverMapView,
 } from '@mj-studio/react-native-naver-map';
 import {StackScreenProps} from '@react-navigation/stack';
 import {MapStackParamList} from '../../types';
 import {BottomSheetModal, BottomSheetModalProvider} from '@gorhom/bottom-sheet';
-import {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import FilterIcon from '../assets/filter-icon.svg';
 import SelectedFilterIcon from '../assets/selected-filter-icon.svg';
 import BookmarkIcon from '../assets/bookmark-selected-icon.svg';
@@ -25,12 +26,18 @@ import {useRecoilState, useRecoilValue} from 'recoil';
 import placeWithFilter from '../recoil/place/withFilter';
 import placeAtom, {IPlace} from '../recoil/place/atom';
 import SelectButton from '../component/SelectButton';
-import categoryAtom, {Categories} from '../recoil/category/atom';
+import categoryAtom, {
+  Categories,
+  mapServerCategoryToEnum,
+} from '../recoil/category/atom';
 import CircleButton from '../component/CircleButton';
 import PlaceBottomSheet from '../component/PlaceBottomSheet';
 import {folderWithSelected} from '../recoil/folder';
 import FilterBottomSheet from '../component/FilterBottomSheet';
 import regionAtom from '../recoil/region';
+import {API} from '../api/base';
+import markerAtom, {IMarker} from '../recoil/marker/atom';
+import HashTags from '../component/HashTags';
 
 export type MapScreenProps = StackScreenProps<MapStackParamList, 'Map'>;
 
@@ -38,16 +45,44 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const filterBottomSheetModalRef = useRef<BottomSheetModal>(null);
 
-  const places: IPlace[] = useRecoilValue(placeAtom);
+  // const places: IPlace[] = useRecoilValue(placeAtom);
   const filteredPlace: IPlace[] = useRecoilValue(placeWithFilter);
   const selectedFolder = useRecoilValue(folderWithSelected);
+  const regions = useRecoilValue(regionAtom);
+  const places = useRecoilValue(placeAtom);
 
   const [categories, setCategories] = useRecoilState(categoryAtom);
-  const regions = useRecoilValue(regionAtom);
+  const [markers, setMarkers] = useRecoilState(markerAtom);
 
   const [selectedMarkerIndex, setSelectedMarkerIndex] = useState(-1);
   const [isOpenModal, setIsOpenModal] = useState(true);
   const [isOpenFilterModal, setIsOpenFilterModal] = useState(false);
+  const [initialLocation, setInitialLocation] = useState({});
+
+  useEffect(() => {
+    getMarkerList();
+  }, []);
+
+  const getMarkerList = async () => {
+    const res = await API.get('/folders/default/markers');
+    const {items} = res.data;
+    const markerList: IMarker[] = items.map((marker: any) => {
+      const markerCategory = mapServerCategoryToEnum(marker.mappedCategory);
+      return {
+        id: marker.id,
+        name: marker.name, // Name of the place
+        category: markerCategory, // Category of the place, e.g., "Restaurant"
+        latitude: marker.latitude, // Latitude as a string
+        longitude: marker.longitude, // Longitude as a string
+      };
+    });
+    setMarkers(markerList);
+    setInitialLocation({
+      latitude: markerList[0]?.latitude, // todo marker 없는 경우
+      longitude: markerList[0]?.longitude,
+      zoom: 13,
+    });
+  };
 
   const handlePresentFilterModalPress = useCallback(() => {
     setIsOpenFilterModal(true);
@@ -93,10 +128,14 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
           <View style={{marginRight: 4}}>
             <SelectButton
               index={-1}
-              isSelected={categories.length !== 0}
+              isSelected={categories.length !== 0 || regions.length !== 0}
               onPress={handlePresentFilterModalPress}
               text={'필터'}
-              icon={categories.length !== 0 ? SelectedFilterIcon : FilterIcon}
+              icon={
+                categories.length !== 0 || regions.length !== 0
+                  ? SelectedFilterIcon
+                  : FilterIcon
+              }
               selectedStyle={{
                 selectedButton: styles.selectedFilter,
                 selectedButtonText: styles.selectedFilterText,
@@ -117,7 +156,8 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
     );
   };
 
-  const renderSummaryCard = (placeInfo: IPlace | undefined) => {
+  const renderSummaryCard = (selectedMarkerIndex: number) => {
+    const placeInfo = places.find(item => item.id === selectedMarkerIndex);
     if (!placeInfo) return;
 
     return (
@@ -131,18 +171,23 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
           </View>
           <View style={styles.placeCard}>
             <Image
-              // source={{uri: 'https://example.com/image.jpg'}}
-              source={require('../assets/test-place.png')}
+              source={
+                placeInfo?.placeImages[0]
+                  ? {uri: placeInfo?.placeImages[0].url}
+                  : require('../assets/unloaded-image.png')
+              }
               style={styles.placeCardImage}
             />
             <View style={styles.placeCardContent}>
               <View style={styles.bookmarkIcon}>
                 <BookmarkIcon />
               </View>
-              <Text style={styles.placeCardTitle}>{placeInfo.title}</Text>
-              <Text style={styles.placeCardLocation}>{placeInfo.location}</Text>
+              <Text style={styles.placeCardTitle}>{placeInfo.name}</Text>
+              <Text style={styles.placeCardLocation}>
+                {placeInfo.simplifiedAddress}
+              </Text>
               <Text style={styles.placeCardTags}>
-                {placeInfo.hashtag.map(item => '#' + item).join(' ')}
+                <HashTags hashtags={placeInfo.hashTags} />
               </Text>
             </View>
           </View>
@@ -158,8 +203,9 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
           <NaverMapView
             style={{flex: 1}}
             isShowLocationButton={false}
-            isShowZoomControls={false}>
-            {filteredPlace.map((item: IPlace) => (
+            isShowZoomControls={false}
+            camera={initialLocation as Camera}>
+            {markers.map((item: IMarker) => (
               <NaverMapMarkerOverlay
                 key={item.id}
                 latitude={item.latitude}
@@ -167,7 +213,7 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
                 onTap={() => handleMarkerPress(item.id)}
                 anchor={{x: 0.5, y: 1}}
                 caption={{
-                  text: item.title,
+                  text: item.name,
                 }}
                 image={require('../assets/cafe-icon.png')}
               />
@@ -175,10 +221,7 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
           </NaverMapView>
 
           {renderFilterSection()}
-          {selectedMarkerIndex !== -1 &&
-            renderSummaryCard(
-              places.find(item => item.id === selectedMarkerIndex),
-            )}
+          {selectedMarkerIndex !== -1 && renderSummaryCard(selectedMarkerIndex)}
           <View style={styles.floatButtonContainer}>
             <CircleButton onPress={handlePresentModalPress} icon={TabIcon} />
             {!isOpenModal && (
@@ -193,6 +236,9 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
             bottomSheetModalRef={bottomSheetModalRef}
             isModalOpen={isOpenModal}
             setIsModalOpen={setIsOpenModal}
+            pressPlace={(index: number) =>
+              navigation.navigate('PlaceDetail', {placeId: index})
+            }
           />
         </BottomSheetModalProvider>
 

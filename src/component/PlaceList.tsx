@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   FlatList,
   Image,
   StyleSheet,
@@ -12,6 +13,8 @@ import React from 'react';
 export interface IPlaceList {
   placeList: IPlace[];
   onPress: (id: number) => void;
+  loading: boolean;
+  load: () => void;
 }
 
 const PlaceList = (props: IPlaceList) => {
@@ -22,14 +25,28 @@ const PlaceList = (props: IPlaceList) => {
       <View>
         <Image // todo 동그랗게 수정
           // source={{uri: item.imageUrl}}
-          source={require('../assets/test-place.png')}
+          source={
+            item?.placeImages[0].url
+              ? {uri: item?.placeImages[0].url}
+              : require('../assets/unloaded-image.png')
+          }
           style={styles.image}
         />
-        <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.location}>{item.location}</Text>
+        <Text style={styles.title}>{item.name}</Text>
+        <Text style={styles.location}>{`${item.simplifiedAddress} ${
+          item.category ? '| ' + item.category : ''
+        }`}</Text>
       </View>
     </TouchableOpacity>
   );
+
+  const renderFooter = () => {
+    return props.loading ? (
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" />
+      </View>
+    ) : null;
+  };
 
   return (
     <FlatList
@@ -40,6 +57,9 @@ const PlaceList = (props: IPlaceList) => {
       contentContainerStyle={styles.bottomSheetScrollViewContent}
       numColumns={2} // 2열 그리드 형식으로 표시
       columnWrapperStyle={styles.gridContainer} // 열 사이 간격 조절
+      onEndReached={props.load} // 리스트 끝에 도달했을 때 추가 데이터 요청
+      onEndReachedThreshold={0.5} // 끝에서 50% 남았을 때 호출
+      ListFooterComponent={renderFooter} // 로딩 중일 때 하단에 로딩 스피너 표시
     />
   );
 };
@@ -73,6 +93,10 @@ const styles = StyleSheet.create({
   location: {
     fontSize: 12.5,
     color: '#888',
+  },
+  loader: {
+    marginVertical: 20,
+    alignItems: 'center',
   },
 });
 export default PlaceList;

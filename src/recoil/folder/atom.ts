@@ -9,25 +9,6 @@ export interface IFolder {
 
 const folderAtom = atom<IFolder[]>({
   key: 'folderAtom',
-  default: [
-    {
-      id: 1,
-      title: 'Instagram',
-      imageUrl: '../assets/test-place.png',
-      totalCount: 38,
-    },
-    {
-      id: 2,
-      title: 'Instagram',
-      imageUrl: '../assets/test-place.png',
-      totalCount: 38,
-    },
-    {
-      id: 3,
-      title: 'Instagram',
-      imageUrl: '../assets/test-place.png',
-      totalCount: 38,
-    },
-  ],
+  default: [],
 });
 export default folderAtom;

@@ -61,8 +61,11 @@
 	<false/>
 	<key>KAKAO_APP_KEY</key>
 	<string>219c7d8b2f2468171002937e3fc42c3b</string>
+	<key>LSApplicationCategoryType</key>
+	<string></string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
+		<string>kakaomap</string>
 		<string>kakaokompassauth</string>
 		<string>storykompassauth</string>
 		<string>kakaolink</string>

@@ -16,6 +16,9 @@ export type RootStackParamList = {
 
 export type MapStackParamList = {
   Map: undefined;
+  PlaceDetail: {
+    placeId: number;
+  };
 };
 
 export type HomeStackParamList = {

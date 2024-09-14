@@ -1,6 +1,5 @@
 import React from 'react';
-import {Text} from 'react-native';
-import {NavigationContainer} from '@react-navigation/native';
+import {Image, Text, View} from 'react-native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {
@@ -42,12 +41,27 @@ import HomeTabIcon from '../assets/home-tab-icon.svg';
 import ActiveHomeTabIcon from '../assets/active-home-tab-icon.svg';
 import TravelTabIcon from '../assets/travel-tab-icon.svg';
 import ActiveTravelTabIcon from '../assets/active-travel-tab-icon.svg';
+import BackButton from '../assets/back-button.svg';
+import PlaceDetailScreen from '../screens/PlaceDetailScreen';
+import type {HeaderBackButton} from '@react-navigation/elements';
 
 const RootStack = createStackNavigator<RootStackParamList>();
 const MapStack = createStackNavigator<MapStackParamList>();
 const HomeStack = createStackNavigator<HomeStackParamList>();
 const TravelStack = createStackNavigator<TravelStackParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
+
+// function renderBackButton(): React.ComponentProps<any> {
+//   return (
+//     <View style={{marginLeft: 24}}>
+//       <BackButton />
+//     </View>
+//   );
+// }
+
+const renderBackButton = (): React.ComponentProps<any> => {
+  return <BackButton style={{marginLeft: 24}} />;
+};
 
 function TabNavigation() {
   return (
@@ -117,6 +131,16 @@ const MStack = () => {
       initialRouteName="Map"
       screenOptions={{headerShown: false}}>
       <MapStack.Screen name="Map" component={MapScreen} />
+      <MapStack.Screen
+        name="PlaceDetail"
+        component={PlaceDetailScreen}
+        options={{
+          headerShown: true,
+          headerTitle: '',
+          headerBackTitleVisible: false,
+          headerBackImage: renderBackButton,
+        }}
+      />
     </MapStack.Navigator>
   );
 };
