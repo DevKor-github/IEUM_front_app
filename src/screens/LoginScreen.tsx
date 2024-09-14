@@ -1,11 +1,11 @@
 import * as React from 'react';
 import {
-  View,
+  Alert,
+  Pressable,
+  SafeAreaView,
   StyleSheet,
   Text,
-  SafeAreaView,
-  Pressable,
-  Alert,
+  View,
 } from 'react-native';
 import {StackScreenProps} from '@react-navigation/stack';
 import LoginLogo from '../assets/main-logo.svg';
@@ -15,17 +15,17 @@ import NaverLoginButton from '../assets/naver-login.svg';
 import AppleLoginButton from '../assets/apple-login.svg';
 import {RootStackParamList} from '../../types';
 import {
+  getAccessToken,
+  getProfile,
+  KakaoAccessTokenInfo,
   KakaoOAuthToken,
   KakaoProfile,
   login,
   logout,
-  getProfile,
-  getAccessToken,
-  KakaoAccessTokenInfo,
 } from '@react-native-seoul/kakao-login';
 import NaverLogin, {
-  NaverLoginResponse,
   GetProfileResponse,
+  NaverLoginResponse,
 } from '@react-native-seoul/naver-login';
 import {appleAuth} from '@invertase/react-native-apple-authentication';
 import {API} from '../api/base';
@@ -56,14 +56,8 @@ const LoginScreen = ({navigation, route}: LoginScreenProps) => {
     if (res.status === 201) {
       console.log('Kakao 로그인 성공');
       await EncryptedStorage.setItem('uuid', res.data.uuid);
-      await EncryptedStorage.setItem(
-        'accessToken',
-        res.data.accessToken,
-      );
-      await EncryptedStorage.setItem(
-        'refreshToken',
-        res.data.refreshToken,
-      );
+      await EncryptedStorage.setItem('accessToken', res.data.accessToken);
+      await EncryptedStorage.setItem('refreshToken', res.data.refreshToken);
       navigation.navigate('Home');
     } else {
       console.log('Kakao 로그인 실패');
@@ -98,7 +92,22 @@ const LoginScreen = ({navigation, route}: LoginScreenProps) => {
       serviceUrlSchemeIOS: serviceUrlScheme,
       disableNaverAppAuthIOS: true,
     });
+    tryLogin();
   }, []);
+
+  const tryLogin = async () => {
+    const refreshToken = await EncryptedStorage.getItem('refreshToken');
+    if (!refreshToken) return;
+
+    const res = await API.get('/auth/refresh', {
+      headers: {
+        Authorization: `Bearer ${refreshToken}`,
+      },
+    });
+    await EncryptedStorage.setItem('accessToken', res.data.accessToken);
+
+    navigation.navigate('Home');
+  };
 
   const [success, setSuccessResponse] =
     React.useState<NaverLoginResponse['successResponse']>();
@@ -121,14 +130,8 @@ const LoginScreen = ({navigation, route}: LoginScreenProps) => {
     if (res.status === 201) {
       console.log('Naver 로그인 성공');
       await EncryptedStorage.setItem('uuid', res.data.uuid);
-      await EncryptedStorage.setItem(
-        'accessToken',
-        res.data.accessToken,
-      );
-      await EncryptedStorage.setItem(
-        'refreshToken',
-        res.data.refreshToken,
-      );
+      await EncryptedStorage.setItem('accessToken', res.data.accessToken);
+      await EncryptedStorage.setItem('refreshToken', res.data.refreshToken);
       navigation.navigate('Home');
     } else {
       console.log('Naver 로그인 실패');
@@ -195,14 +198,8 @@ const LoginScreen = ({navigation, route}: LoginScreenProps) => {
         if (res.status === 201) {
           console.log('Apple 로그인 성공');
           await EncryptedStorage.setItem('uuid', res.data.uuid);
-          await EncryptedStorage.setItem(
-            'accessToken',
-            res.data.accessToken,
-          );
-          await EncryptedStorage.setItem(
-            'refreshToken',
-            res.data.refreshToken,
-          );
+          await EncryptedStorage.setItem('accessToken', res.data.accessToken);
+          await EncryptedStorage.setItem('refreshToken', res.data.refreshToken);
           navigation.navigate('Home');
         } else {
           console.log('Apple 로그인 실패');
