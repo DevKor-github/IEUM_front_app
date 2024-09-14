@@ -128,10 +128,14 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
           <View style={{marginRight: 4}}>
             <SelectButton
               index={-1}
-              isSelected={categories.length !== 0}
+              isSelected={categories.length !== 0 || regions.length !== 0}
               onPress={handlePresentFilterModalPress}
               text={'필터'}
-              icon={categories.length !== 0 ? SelectedFilterIcon : FilterIcon}
+              icon={
+                categories.length !== 0 || regions.length !== 0
+                  ? SelectedFilterIcon
+                  : FilterIcon
+              }
               selectedStyle={{
                 selectedButton: styles.selectedFilter,
                 selectedButtonText: styles.selectedFilterText,
