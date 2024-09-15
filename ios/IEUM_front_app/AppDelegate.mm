@@ -6,7 +6,7 @@
 
 #import <NaverThirdPartyLogin/NaverThirdPartyLoginConnection.h>
 
-#import <React/RCTLinkingManager.h> 
+#import <React/RCTLinkingManager.h>
 
 
 @implementation AppDelegate
@@ -46,15 +46,8 @@
   if ([url.scheme isEqualToString:@"naverLogin"]) {
     return [[NaverThirdPartyLoginConnection getSharedInstance] application:app openURL:url options:options];
   }
- 
-  return NO;
-}
 
-- (BOOL)application:(UIApplication *)application
-   openURL:(NSURL *)url
-   options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
-{
-  return [RCTLinkingManager application:application openURL:url options:options];
+  return NO;
 }
 
 @end

@@ -52,7 +52,7 @@ const PlaceList = (props: IPlaceList) => {
     <FlatList
       data={props.placeList}
       renderItem={renderItem}
-      keyExtractor={item => 'place_' + item.id.toString()}
+      keyExtractor={item => 'place_' + item.id.toString() + item.name}
       // key={mode === 'SAVED_PLACED' ? 'two-columns' : 'one-column'} // key 값 변경으로 재렌더링 유도
       contentContainerStyle={styles.bottomSheetScrollViewContent}
       numColumns={2} // 2열 그리드 형식으로 표시
