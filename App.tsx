@@ -7,7 +7,7 @@ import {LogBox} from 'react-native';
 
 const App = () => {
   useEffect(() => {
-    LogBox.ignoreAllLogs();
+    LogBox.ignoreAllLogs(); // 앱에 뜨는 로그 제거
   }, []);
   return (
     <GestureHandlerRootView style={{flex: 1}}>

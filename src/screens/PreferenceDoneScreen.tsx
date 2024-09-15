@@ -36,23 +36,22 @@ const PreferenceDoneScreen = ({
         birthDate: userInfo.birthDate,
         sex: userInfo.sex,
         mbti: userInfo.mbti,
-        preferredRegion: userInfo.preferredRegion,
-        preferredCompanion: userInfo.preferredCompanion,
-        cheepOrExpensive: userInfo.budgetStyle,
+        preferredRegions: userInfo.preferredRegion,
+        preferredCompanions: userInfo.preferredCompanion,
+        cheapOrExpensive: userInfo.budgetStyle,
         plannedOrImprovise: userInfo.planningStyle,
         tightOrLoose: userInfo.scheduleStyle,
         popularOrLocal: userInfo.destinationStyle1,
         natureOrCity: userInfo.destinationStyle2,
         restOrActivity: userInfo.destinationStyle3,
       };
-      console.log(requestBody)
       const accessToken = await EncryptedStorage.getItem('accessToken');
       const res = await API.put('/users/me', requestBody, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      console.log(res)
+      console.log(res);
       if (res.status === 201) {
         console.log('정보 입력 성공!');
       }
