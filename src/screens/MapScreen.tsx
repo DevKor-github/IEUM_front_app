@@ -67,7 +67,7 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
     const res = await API.get('/folders/default/markers');
     const {items} = res.data;
     const markerList: IMarker[] = items.map((marker: any) => {
-      const markerCategory = mapServerCategoryToEnum(marker.mappedCategory);
+      const markerCategory = mapServerCategoryToEnum(marker.ieumCategory);
       return {
         id: marker.id,
         name: marker.name, // Name of the place

@@ -16,13 +16,8 @@ import {BottomSheetModal, BottomSheetView} from '@gorhom/bottom-sheet';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import placeAtom, {IPlace} from '../recoil/place/atom';
 import {useRecoilState, useRecoilValue, useSetRecoilState} from 'recoil';
-import placeWithFilter from '../recoil/place/withFilter';
 import categoryAtom from '../recoil/category';
-import {
-  Categories,
-  mapEnumToServerCategory,
-  mapServerCategoryToEnum,
-} from '../recoil/category/atom';
+import {Categories, mapServerCategoryToEnum} from '../recoil/category/atom';
 import folderAtom, {
   folderWithSelected,
   selectedFolderAtom,
@@ -117,7 +112,7 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
   });
   const getFolderList = async () => {
     const res = await API.get('/folders');
-    const {items, meta} = res.data;
+    const {items} = res.data;
     const folderList: IFolder[] = items.map((item: any) => {
       return {
         id: item.id,
@@ -130,15 +125,9 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
     setFolders(folderList);
   };
 
-  const createUrlWithCategories = (baseUrl: string, categoryList: string[]) => {
-    const params = new URLSearchParams();
-    categoryList.forEach(category => params.append('categoryList', category));
-    return `${baseUrl}?${params.toString()}`;
-  };
-
   const getPlaceList = async (
-    categories?: Categories[] = undefined,
-    regions?: Regions[] = undefined,
+    categoryList: Categories[] = [],
+    regionList: Regions[] = [],
   ) => {
     if (loading || !hasNextPage) return;
 
@@ -151,13 +140,13 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
       // params = {...params, cursorId: cursor};
       params.append('cursorId', cursor.toString());
     }
-    if (categories?.length > 0) {
-      categories?.forEach(category =>
-        params.append('categoryList', mapEnumToServerCategory(category)),
+    if (categoryList && categoryList?.length > 0) {
+      categoryList?.forEach(category =>
+        params.append('categoryList', category),
       );
     }
-    if (regions?.length > 0) {
-      regions?.forEach(region => params.append('addressList', region));
+    if (regionList && regionList?.length > 0) {
+      regionList?.forEach(region => params.append('addressList', region));
     }
 
     API.get(`/folders/default/places-list?${params.toString()}`)
@@ -166,7 +155,7 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
         setHasNextPage(meta.hasNextPage);
         setCursor(meta.nextCursorId);
         const placeList: IPlace[] = items.map((place: any) => {
-          const markerCategory = mapServerCategoryToEnum(place.mappedCategory);
+          const markerCategory = mapServerCategoryToEnum(place.ieumCategory);
           return {
             id: place.id,
             name: place.name, // Name of the place
@@ -301,7 +290,7 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
         setHasNextPageFolderPlace(meta.hasNextPage);
         setFolderCursor(meta.nextCursorId);
         const placeList: IPlace[] = items.map((place: any) => {
-          const markerCategory = mapServerCategoryToEnum(place.mappedCategory);
+          const markerCategory = mapServerCategoryToEnum(place.ieumCategory);
           return {
             id: place.id,
             name: place.name, // Name of the place

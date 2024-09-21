@@ -36,7 +36,7 @@ interface Place {
   id: number;
   name: string;
   simplifiedAddress: string;
-  mappedCategory: string;
+  ieumCategory: string;
   imageUrl: string;
 }
 
@@ -120,15 +120,12 @@ const FolderPlaceListScreen = ({
             try {
               const requestBody = {placeIds: selectedPlaces};
               const accessToken = await EncryptedStorage.getItem('accessToken');
-              await API.delete(
-                `/folders/${folderId}/folder-places`,
-                {
-                  headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                  },
-                  data: requestBody,
+              await API.delete(`/folders/${folderId}/folder-places`, {
+                headers: {
+                  Authorization: `Bearer ${accessToken}`,
                 },
-              );
+                data: requestBody,
+              });
               navigation.goBack();
             } catch (err) {
               const error = err as AxiosError;
@@ -175,15 +172,11 @@ const FolderPlaceListScreen = ({
       const requestBody = {
         placeIds: validPlaceIds,
       };
-      await API.post(
-        `/folders/${folderId}/folder-places`,
-        requestBody,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
+      await API.post(`/folders/${folderId}/folder-places`, requestBody, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
         },
-      );
+      });
       setIsBottomSheetVisible(false);
       setSelectedPlaces([]);
       setSelectedFolderId(null);
@@ -363,7 +356,7 @@ const FolderPlaceListScreen = ({
               />
               <Text style={styles.placeName}>{place.name}</Text>
               <Text style={styles.placeInfo}>
-                {place.simplifiedAddress} | {place.mappedCategory}
+                {place.simplifiedAddress} | {place.ieumCategory}
               </Text>
               {isSelecting && (
                 <View style={styles.selectionIcon}>

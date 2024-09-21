@@ -45,7 +45,7 @@ interface Place {
   id: number;
   name: string;
   simplifiedAddress: string;
-  mappedCategory: string;
+  ieumCategory: string;
   imageUrl: string;
 }
 
@@ -79,7 +79,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         },
       });
 
-      console.log(res)
+      console.log(res);
 
       const data = res.data.items;
       const meta = res.data.meta;
@@ -187,7 +187,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         <View style={styles.placeImage} />
         <Text style={styles.placeName}>{place.name}</Text>
         <Text style={styles.placeInfo}>
-          {place.simplifiedAddress} | {place.mappedCategory}
+          {place.simplifiedAddress} | {place.ieumCategory}
         </Text>
       </View>
     ));
