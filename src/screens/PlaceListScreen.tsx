@@ -32,7 +32,7 @@ interface Place {
   id: number;
   name: string;
   simplifiedAddress: string;
-  mappedCategory: string;
+  ieumCategory: string;
   imageUrl: string;
 }
 
@@ -115,15 +115,12 @@ const PlaceListScreen = ({navigation, route}: PlaceListScreenProps) => {
             const requestBody = {placeIds: selectedPlaces};
             try {
               const accessToken = await EncryptedStorage.getItem('accessToken');
-              await API.delete(
-                `/folders/${defaultId}/folder-places`,
-                {
-                  headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                  },
-                  data: requestBody,
+              await API.delete(`/folders/${defaultId}/folder-places`, {
+                headers: {
+                  Authorization: `Bearer ${accessToken}`,
                 },
-              );
+                data: requestBody,
+              });
               setSavedPlaces(prevPlaces =>
                 prevPlaces.filter(place => !selectedPlaces.includes(place.id)),
               );
@@ -222,7 +219,7 @@ const PlaceListScreen = ({navigation, route}: PlaceListScreenProps) => {
               />
               <Text style={styles.placeName}>{place.name}</Text>
               <Text style={styles.placeInfo}>
-                {place.simplifiedAddress} | {place.mappedCategory}
+                {place.simplifiedAddress} | {place.ieumCategory}
               </Text>
               {isSelecting && (
                 <View style={styles.selectionIcon}>

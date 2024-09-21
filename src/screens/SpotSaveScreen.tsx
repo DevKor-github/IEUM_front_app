@@ -35,7 +35,7 @@ interface Place {
   placeId: number;
   placeName: string;
   simplifiedAddress: string;
-  mappedCategory: string;
+  ieumCategory: string;
   isSaved: boolean;
 }
 
@@ -287,7 +287,7 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
       <View>
         <Text style={styles.placeName}>{item.placeName}</Text>
         <Text style={styles.placeInfo}>
-          {item.simplifiedAddress} | {item.mappedCategory}
+          {item.simplifiedAddress} | {item.ieumCategory}
         </Text>
       </View>
       {isSelecting ? (

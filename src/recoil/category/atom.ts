@@ -10,19 +10,19 @@ export enum Categories {
 }
 export const mapServerCategoryToEnum = (serverCategory: string): Categories => {
   switch (serverCategory) {
-    case 'Restaurant':
+    case 'FOOD':
       return Categories.FOOD;
-    case 'Cafe':
+    case 'CAFE':
       return Categories.CAFE;
-    case 'Bar':
+    case 'ALCOHOL':
       return Categories.ALCOHOL;
-    case 'Museum':
+    case 'MUSEUM':
       return Categories.MUSEUM;
-    case 'Stay':
+    case 'STAY':
     case 'Hostel':
       return Categories.STAY;
     case 'Shopping':
-    case 'Mall':
+    case 'SHOPPING':
       return Categories.SHOPPING;
     default:
       return Categories.OTHERS;
