@@ -38,6 +38,9 @@ export type HomeStackParamList = {
   FolderPlaceList: {folderId: number; folderName: string};
   RenameFolder: {folderId: number};
   PlaceList: undefined;
+  PlaceDetail: {
+    placeId: number;
+  };
 };
 
 export type TravelStackParamList = {

@@ -346,6 +346,8 @@ const FolderPlaceListScreen = ({
               onPress={() => {
                 if (isSelecting) {
                   toggleSelection(place.id);
+                } else {
+                  navigation.navigate('PlaceDetail', {placeId: place.id});
                 }
               }}>
               <View

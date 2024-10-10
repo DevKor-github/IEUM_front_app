@@ -210,7 +210,9 @@ const PlaceListScreen = ({navigation, route}: PlaceListScreenProps) => {
             <Pressable
               key={place.id}
               style={[styles.placeItem, {marginRight: index % 2 === 0 ? 8 : 0}]}
-              onPress={() => (isSelecting ? toggleSelection(place.id) : null)}>
+              onPress={() =>
+                isSelecting ? toggleSelection(place.id) : navigation.navigate('PlaceDetail', { placeId: place.id })
+              }>
               <View
                 style={[
                   styles.placeImage,
