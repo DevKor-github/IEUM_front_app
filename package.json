@@ -23,6 +23,7 @@
     "@react-navigation/stack": "^6.4.1",
     "@tsconfig/react-native": "^3.0.5",
     "axios": "^1.7.3",
+    "dayjs": "^1.11.13",
     "dotenv": "^16.4.5",
     "metro-react-native-babel-preset": "^0.77.0",
     "node-libs-react-native": "^1.2.1",

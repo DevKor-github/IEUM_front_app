@@ -230,7 +230,12 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>내 보관함 🚘</Text>
-          {renderFolders()}
+          <Pressable
+            onPress={() =>
+              navigation.navigate('FolderList', {newFolder: null})
+            }>
+            {renderFolders()}
+          </Pressable>
           <Pressable
             style={styles.viewAllButton}
             onPress={() =>
@@ -246,13 +251,15 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           <Text
             style={{
               fontSize: 18,
-              fontWeight: '700',
+              fontWeight: '600',
               alignSelf: 'flex-start',
               marginBottom: 18,
             }}>
             내 장소 📍
           </Text>
-          {renderPlaces()}
+          <Pressable onPress={() => navigation.navigate('PlaceList')}>
+            {renderPlaces()}
+          </Pressable>
           <Pressable
             style={{
               width: 172,
@@ -342,6 +349,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FAFBFC',
     borderColor: '#F2F3F4',
     borderWidth: 1,
+    borderRadius: 15,
   },
   linkInfoTextContainer: {
     marginLeft: 13.5,
@@ -368,7 +376,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '600',
     alignSelf: 'flex-start',
   },
   foldersContainer: {
@@ -453,7 +461,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FF5570',
-    borderColor: '#FFFFFF5970',
+    borderColor: 'rgba(255, 255, 255, 0.35)',
     borderWidth: 1,
     borderRadius: 65,
   },

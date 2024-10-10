@@ -56,6 +56,7 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
   const [isSelecting, setIsSelecting] = useState(false);
   const [isBottomSheetVisible, setIsBottomSheetVisible] = useState(false);
   const [folders, setFolders] = useState<Folder[]>([]);
+  const [nickname, setNickName] = useState('');
   const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null);
   const [savedPlacesCursorId, setSavedPlacesCursorId] = useState<number | null>(
     0,
@@ -156,6 +157,19 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
         : [...prevSelected, placeId],
     );
   };
+
+  useEffect(() => {
+    async function getNickName() {
+      const accessToken = await EncryptedStorage.getItem('accessToken');
+      const res = await API.get('/users/me', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      setNickName(res.data.nickname);
+    }
+    getNickName();
+  }, []);
 
   const handleSavePlace = async (placeId: number, isSaved: boolean) => {
     if (
@@ -427,7 +441,7 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
             <Text style={styles.noticeText}>이음 알림 💌</Text>
           </View>
           <Text style={styles.noticeText}>
-            저장된 장소는 muya_ho 님의 지도에 추가됩니다!
+            저장된 장소는 {nickname} 님의 지도에 추가됩니다!
           </Text>
         </LinearGradient>
         <FlatList

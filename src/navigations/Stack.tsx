@@ -164,6 +164,16 @@ const HStack = () => {
       />
       <HomeStack.Screen name="RenameFolder" component={RenameFolderScreen} />
       <HomeStack.Screen name="PlaceList" component={PlaceListScreen} />
+      <HomeStack.Screen
+        name="PlaceDetail"
+        component={PlaceDetailScreen}
+        options={{
+          headerShown: true,
+          headerTitle: '',
+          headerBackTitleVisible: false,
+          headerBackImage: renderBackButton,
+        }}
+      />
       {/* Removed ServiceAgreement from HomeStack to avoid duplicate nesting */}
     </HomeStack.Navigator>
   );
