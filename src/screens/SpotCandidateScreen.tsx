@@ -16,6 +16,7 @@ import BackButton from '../assets/back-button.svg';
 import {API} from '../api/base';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import {useFocusEffect} from '@react-navigation/native';
+import dayjs from 'dayjs'; // For date formatting
 
 export type SpotCandidateScreenProps = StackScreenProps<
   HomeStackParamList,
@@ -27,6 +28,7 @@ interface LinkData {
   collectionType: 'INSTAGRAM' | 'NAVER BLOG';
   link: string;
   content: string;
+  createdAt: string;
   collectionPlacesCount: number;
   savedCollectionPlacesCount: number;
 }
@@ -36,6 +38,7 @@ const dWidth = Dimensions.get('window').width;
 const SpotCandidateScreen = ({navigation}: SpotCandidateScreenProps) => {
   const [unviewedLinks, setUnviewedLinks] = useState<LinkData[]>([]);
   const [viewedLinks, setViewedLinks] = useState<LinkData[]>([]);
+  const [recentUpdateDate, setRecentUpdateDate] = useState<string | null>(null);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -44,22 +47,16 @@ const SpotCandidateScreen = ({navigation}: SpotCandidateScreenProps) => {
       const fetchLinks = async () => {
         try {
           const accessToken = await EncryptedStorage.getItem('accessToken');
-
-          if (!accessToken) {
-            throw new Error('No access token found');
-          }
+          if (!accessToken) throw new Error('No access token found');
 
           // Fetch unviewed links
           const unviewedResponse = await API.get<{
             response: {data: LinkData[]};
           }>('/collections/unviewed', {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-            params: {
-              cursorId: 0,
-            },
+            headers: {Authorization: `Bearer ${accessToken}`},
+            params: {cursorId: 0},
           });
+
           if (isActive) {
             setUnviewedLinks(unviewedResponse.data.items);
           }
@@ -68,16 +65,40 @@ const SpotCandidateScreen = ({navigation}: SpotCandidateScreenProps) => {
           const viewedResponse = await API.get<{response: {data: LinkData[]}}>(
             '/collections/viewed',
             {
-              headers: {
-                Authorization: `Bearer ${accessToken}`,
-              },
-              params: {
-                cursorId: 0,
-              },
+              headers: {Authorization: `Bearer ${accessToken}`},
+              params: {cursorId: 0},
             },
           );
+
           if (isActive) {
             setViewedLinks(viewedResponse.data.items);
+          }
+
+          // Determine the most recent createdAt date
+          const allLinks = [
+            ...unviewedResponse.data.items,
+            ...viewedResponse.data.items,
+          ];
+
+          if (allLinks.length > 0) {
+            const latestLink = allLinks.reduce((latest, current) => {
+              return dayjs(current.createdAt).isAfter(dayjs(latest.createdAt))
+                ? current
+                : latest;
+            });
+
+            const createdAt = dayjs(latestLink.createdAt);
+            let adjustedHour = createdAt.hour() + 9;
+
+            if (adjustedHour >= 24) {
+              adjustedHour = adjustedHour - 24;
+            }
+
+            setRecentUpdateDate(
+              dayjs(latestLink.createdAt)
+                .hour(adjustedHour)
+                .format('YYYY/MM/DD HH:mm'),
+            );
           }
         } catch (error) {
           console.error(error);
@@ -130,7 +151,7 @@ const SpotCandidateScreen = ({navigation}: SpotCandidateScreenProps) => {
           <Text style={styles.recentUpdateText}>RECENT UPDATE</Text>
           <View style={styles.dateContainer}>
             <Text style={styles.lightbulb}>💡</Text>
-            <Text style={styles.dateText}>2024/7/16 17:52</Text>
+            <Text style={styles.dateText}>{recentUpdateDate || 'N/A'}</Text>
           </View>
         </View>
 
