@@ -8,6 +8,7 @@ import {
   Dimensions,
   ScrollView,
   Alert,
+  NativeModules,
 } from 'react-native';
 import {StackScreenProps} from '@react-navigation/stack';
 import {HomeStackParamList} from '../../types';
@@ -61,6 +62,21 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const [cursorId, setCursorId] = useState<number | null>(0);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMoreData, setHasMoreData] = useState(true);
+
+  useEffect(() => {
+    saveTokenToUserDefaults();
+  }, []);
+  async function saveTokenToUserDefaults() {
+    try {
+      const token = await EncryptedStorage.getItem('accessToken');
+      if (token) {
+        const {SharedDataModule} = NativeModules;
+        SharedDataModule.saveAccessToken(token); // Share Extension에서 호출할 메서드
+      }
+    } catch (error) {
+      console.error('Failed to retrieve access token:', error);
+    }
+  }
 
   const fetchSavedPlaces = useCallback(async () => {
     if (isLoadingMore || !hasMoreData || cursorId === null) return;
