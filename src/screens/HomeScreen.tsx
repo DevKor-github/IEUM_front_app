@@ -68,13 +68,13 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   }, []);
   async function saveTokenToUserDefaults() {
     try {
-      const token = await EncryptedStorage.getItem('accessToken');
+      const token = await EncryptedStorage.getItem('refreshToken');
       if (token) {
         const {SharedDataModule} = NativeModules;
-        SharedDataModule.saveAccessToken(token); // Share Extension에서 호출할 메서드
+        SharedDataModule.saveRefreshToken(token); // Share Extension에서 호출할 메서드
       }
     } catch (error) {
-      console.error('Failed to retrieve access token:', error);
+      console.error('Failed to retrieve refresh token:', error);
     }
   }
 

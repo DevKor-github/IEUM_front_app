@@ -29,4 +29,10 @@ class SharedDataModule: NSObject {
       userDefaults?.set(token, forKey: "access_token")
       userDefaults?.synchronize()
   }
+  @objc
+  func saveRefreshToken(_ token: String) {
+      let userDefaults = UserDefaults(suiteName: "group.club.devkor.ieum.api")
+      userDefaults?.set(token, forKey: "refresh_token")
+      userDefaults?.synchronize()
+  }
 }

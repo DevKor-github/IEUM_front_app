@@ -14,5 +14,6 @@ RCT_EXTERN_METHOD(getSharedText:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(saveAccessToken:(NSString *)token)
+RCT_EXTERN_METHOD(saveRefreshToken:(NSString *)token)
 
 @end

@@ -76,10 +76,10 @@ class ShareViewController: SLComposeServiceViewController {
     request.httpMethod = "POST"
 
     let userDefaults = UserDefaults(suiteName: "group.club.devkor.ieum.api")
-    if let accessToken = userDefaults?.string(forKey: "access_token") {
-//       print("Received access token: \(accessToken)")
+    if let refreshToken = userDefaults?.string(forKey: "refresh_token") {
+//       print("Received refresh token: \(refreshToken)")
         // Access token을 사용하여 필요한 작업 수행
-      request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+      request.setValue("Bearer \(refreshToken)", forHTTPHeaderField: "Authorization")
     }
 
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
