@@ -1,11 +1,4 @@
-import {
-  Dimensions,
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import {Dimensions, ScrollView, StyleSheet, Text, View} from 'react-native';
 import {
   Camera,
   NaverMapMarkerOverlay,
@@ -38,6 +31,7 @@ import regionAtom from '../recoil/region';
 import {API} from '../api/base';
 import markerAtom, {IMarker} from '../recoil/marker/atom';
 import HashTags from '../component/HashTags';
+import ImageContainer from '../component/ImageContainer';
 
 export type MapScreenProps = StackScreenProps<MapStackParamList, 'Map'>;
 
@@ -170,14 +164,15 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
             />
           </View>
           <View style={styles.placeCard}>
-            <Image
-              source={
-                placeInfo?.placeImages[0]
-                  ? {uri: placeInfo?.placeImages[0].url}
-                  : require('../assets/unloaded-image.png')
-              }
-              style={styles.placeCardImage}
-            />
+            <View style={styles.placeCardImage}>
+              <ImageContainer
+                imageUrl={placeInfo?.placeImages[0]?.url}
+                defaultImageUrl={require('../assets/unloaded-image-v3.png')}
+                width={120}
+                height={130}
+                borderRadius={10}
+              />
+            </View>
             <View style={styles.placeCardContent}>
               <View style={styles.bookmarkIcon}>
                 <BookmarkIcon />
@@ -317,9 +312,6 @@ const styles = StyleSheet.create({
     width: Dimensions.get('window').width * 0.9,
   },
   placeCardImage: {
-    width: 120,
-    height: 130,
-    borderRadius: 10,
     marginRight: 15,
   },
   placeCardContent: {

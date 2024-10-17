@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {
   Alert,
-  Image,
   Linking,
   ScrollView,
   StyleSheet,
@@ -25,6 +24,7 @@ import {API} from '../api/base';
 import {Categories} from '../recoil/category/atom';
 import Clipboard from '@react-native-clipboard/clipboard';
 import HashTags from '../component/HashTags';
+import ImageContainer from '../component/ImageContainer';
 
 export type PlaceDetailScreenProps = StackScreenProps<
   MapStackParamList,
@@ -183,15 +183,12 @@ const PlaceDetailScreen = ({navigation, route}: PlaceDetailScreenProps) => {
   return (
     <ScrollView style={styles.container}>
       {/* Header 이미지 */}
-      <Image
-        style={styles.headerImage}
-        source={
-          placeDetails?.placeImages[0]
-            ? {uri: placeDetails?.placeImages[0].url}
-            : require('../assets/unloaded-image.png')
-        } // 여기에 이미지 URL 추가
+      <ImageContainer
+        imageUrl={placeDetails?.placeImages[0]?.url || ''}
+        defaultImageUrl={require('../assets/unloaded-image.png')}
+        width="100%"
+        height={320}
       />
-
       <View style={styles.contentContainer}>
         {/* 카페 이름과 북마크 아이콘 */}
         {renderTitleSection()}

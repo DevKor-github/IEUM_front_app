@@ -1,11 +1,4 @@
-import {
-  FlatList,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import {FlatList, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import LocationIcon from '../assets/location-icon.svg';
 import SaveFinIcon from '../assets/save-fin-icon.svg';
 import BookmarkIcon from '../assets/bookmark-filled-icon.svg';
@@ -29,6 +22,7 @@ import CircleButton from './CircleButton';
 import regionAtom from '../recoil/region';
 import {Regions} from '../recoil/region/atom';
 import {API} from '../api/base';
+import ImageContainer from './ImageContainer';
 
 export interface IPlaceBottomSheet {
   bottomSheetModalRef: React.RefObject<BottomSheetModal>;
@@ -323,14 +317,16 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
     const renderItem = ({item}: {item: IFolder}) => (
       <TouchableOpacity onPress={() => pressFolder(item.id)}>
         <View style={styles.itemContainer}>
-          <Image
-            source={
-              item?.imageUrl
-                ? {uri: item?.imageUrl}
-                : require('../assets/unloaded-image.png')
-            }
-            style={styles.itemImage}
-          />
+          <View style={styles.itemImage}>
+            <ImageContainer
+              imageUrl={item?.imageUrl}
+              defaultImageUrl={require('../assets/unloaded-image.png')}
+              width={50}
+              height={50}
+              borderRadius={5}
+            />
+          </View>
+
           <View style={styles.itemTextContainer}>
             <Text style={styles.itemTitle}>{item.title}</Text>
             <View style={styles.itemSubtitleContainer}>
@@ -468,9 +464,6 @@ const styles = StyleSheet.create({
     width: 1000,
   },
   itemImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 5,
     marginRight: 10,
   },
   itemTextContainer: {
