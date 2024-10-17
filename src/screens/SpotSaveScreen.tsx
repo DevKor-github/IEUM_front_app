@@ -23,7 +23,7 @@ import CheckedSpot from '../assets/checked-spot.svg';
 import EmptySpot from '../assets/empty-circle.svg';
 import SelectIcon from '../assets/select-icon.svg';
 import SavedPlaceNum from '../assets/saved-place-num.svg';
-import SpotSaveIcon from '../assets/spot-save-icon.svg';
+import SpotSaveIcon from '../assets/bookmark-selected-icon.svg';
 import {useFocusEffect} from '@react-navigation/native';
 
 export type SpotSaveScreenProps = StackScreenProps<
@@ -150,6 +150,7 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
     getFolder();
   }, [navigation]);
 
+  // Toggle selection of a place for saving or removing from saved places
   const toggleSelection = (placeId: number) => {
     setSelectedPlaces(prevSelected =>
       prevSelected.includes(placeId)
@@ -176,9 +177,16 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
       isSaved ||
       (savedPlaces && savedPlaces.some(place => place.id === placeId))
     ) {
-      Alert.alert('이미 저장된 장소입니다');
+      const savedFolder = savedPlaces.find(place => place.id === placeId);
+
+      if (savedFolder) {
+        setSelectedFolderId(savedFolder.id); // Set the selected folder ID
+      }
+      setIsBottomSheetVisible(true);
+      setSelectedPlaces([placeId]);
       return;
     }
+
     try {
       const accessToken = await EncryptedStorage.getItem('accessToken');
       await API.post(
@@ -370,7 +378,7 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
             </Text>
           </View>
         </View>
-        {selectedFolderId === item.id ? (
+        {selectedFolderId === item.id ? ( // Check if the folder is selected
           <CheckedSpot style={{marginLeft: 'auto'}} />
         ) : (
           <PlusIcon style={{marginLeft: 'auto'}} />
@@ -452,7 +460,10 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
           ListHeaderComponent={
             <View style={styles.actionHeader}>
               <Pressable
-                onPress={() => setIsSelecting(!isSelecting)}
+                onPress={() => {
+                  setIsSelecting(!isSelecting);
+                  setSelectedPlaces([]);
+                }}
                 style={styles.selectButton}>
                 {!isSelecting ? <SelectIcon /> : <></>}
                 <Text style={styles.actionText}>
