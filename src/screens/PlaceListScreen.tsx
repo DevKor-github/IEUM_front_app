@@ -20,6 +20,7 @@ import {API} from '../api/base';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import {HomeStackParamList} from '../../types';
 import {useFocusEffect} from '@react-navigation/native';
+import ImageContainer from '../component/ImageContainer';
 
 export type PlaceListScreenProps = StackScreenProps<
   HomeStackParamList,
@@ -211,14 +212,23 @@ const PlaceListScreen = ({navigation, route}: PlaceListScreenProps) => {
               key={place.id}
               style={[styles.placeItem, {marginRight: index % 2 === 0 ? 8 : 0}]}
               onPress={() =>
-                isSelecting ? toggleSelection(place.id) : navigation.navigate('PlaceDetail', { placeId: place.id })
+                isSelecting
+                  ? toggleSelection(place.id)
+                  : navigation.navigate('PlaceDetail', {placeId: place.id})
               }>
-              <View
-                style={[
-                  styles.placeImage,
-                  selectedPlaces.includes(place.id) && styles.selectedPlace,
-                ]}
-              />
+              <ImageContainer
+                imageUrl={place.imageUrl}
+                defaultImageUrl={require('../assets/unloaded-image-v2.png')}
+                width="100%"
+                height={218}
+                borderRadius={10}>
+                <View
+                  style={[
+                    selectedPlaces.includes(place.id) && styles.selectedPlace,
+                  ]}
+                />
+              </ImageContainer>
+
               <Text style={styles.placeName}>{place.name}</Text>
               <Text style={styles.placeInfo}>
                 {place.simplifiedAddress} | {place.ieumCategory}
@@ -335,6 +345,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'grey',
   },
   selectedPlace: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'grey',
+    borderRadius: 10,
     opacity: 0.7,
   },
   placeName: {

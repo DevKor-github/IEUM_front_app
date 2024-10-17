@@ -1,14 +1,14 @@
-import {useEffect, useState, useCallback} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {
-  View,
+  Alert,
+  Dimensions,
+  NativeModules,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
-  SafeAreaView,
-  Pressable,
-  Dimensions,
-  ScrollView,
-  Alert,
-  NativeModules,
+  View,
 } from 'react-native';
 import {StackScreenProps} from '@react-navigation/stack';
 import {HomeStackParamList} from '../../types';
@@ -23,6 +23,7 @@ import {API} from '../api/base';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import {useFocusEffect} from '@react-navigation/native';
 import {AxiosError} from 'axios';
+import ImageContainer from '../component/ImageContainer';
 
 export type HomeScreenProps = StackScreenProps<HomeStackParamList, 'Home'>;
 
@@ -40,6 +41,7 @@ interface Folder {
   name: string;
   placeCnt: number;
   type: number;
+  thumbnailUrl: string;
 }
 
 interface Place {
@@ -180,17 +182,26 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
   const renderFolders = () => {
     const folderItems = folders.slice(0, 4).map((folder, index) => (
-      <View
-        key={folder.id}
-        style={[styles.folderItem, {marginRight: index % 2 === 0 ? 8 : 0}]}>
-        <Text style={styles.folderName}>{folder.name}</Text>
-        <View style={styles.folderInfo}>
-          <FolderSavedPlaceNum />
-          <Text style={styles.folderPlaceCount}>
-            저장한 장소 · {folder.placeCnt}곳
-          </Text>
+      <>
+        <View key={folder.id} style={[{marginRight: index % 2 === 0 ? 8 : 0}]}>
+          <ImageContainer
+            imageUrl={folder.thumbnailUrl}
+            defaultImageUrl={require('../assets/unloaded-image-v3.png')}
+            width={(dWidth - 58) / 2}
+            height={105}
+            borderRadius={8}>
+            <View style={styles.folderItem}>
+              <Text style={styles.folderName}>{folder.name}</Text>
+              <View style={styles.folderInfo}>
+                <FolderSavedPlaceNum />
+                <Text style={styles.folderPlaceCount}>
+                  저장한 장소 · {folder.placeCnt}곳
+                </Text>
+              </View>
+            </View>
+          </ImageContainer>
         </View>
-      </View>
+      </>
     ));
     return <View style={styles.foldersContainer}>{folderItems}</View>;
   };
@@ -200,7 +211,13 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       <View
         key={place.id}
         style={[styles.placeItem, {marginRight: index % 2 === 0 ? 8 : 0}]}>
-        <View style={styles.placeImage} />
+        <ImageContainer
+          imageUrl={place.imageUrl}
+          defaultImageUrl={require('../assets/unloaded-image-v2.png')}
+          width="100%"
+          height={220}
+          borderRadius={6}
+        />
         <Text style={styles.placeName}>{place.name}</Text>
         <Text style={styles.placeInfo}>
           {place.simplifiedAddress} | {place.ieumCategory}
@@ -403,10 +420,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   folderItem: {
-    width: (dWidth - 58) / 2,
-    height: 105,
-    backgroundColor: '#D9D9D9',
-    borderRadius: 8,
     padding: 15,
     marginBottom: 10,
     marginRight: 8,

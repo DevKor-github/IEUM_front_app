@@ -1,13 +1,13 @@
-import {useEffect, useState, useCallback} from 'react';
+import {useCallback, useState} from 'react';
 import {
-  View,
+  Alert,
+  Dimensions,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
-  SafeAreaView,
-  Pressable,
-  Dimensions,
-  ScrollView,
-  Alert,
+  View,
 } from 'react-native';
 import {StackScreenProps} from '@react-navigation/stack';
 import BackButton from '../assets/back-button.svg';
@@ -22,6 +22,7 @@ import EncryptedStorage from 'react-native-encrypted-storage';
 import {HomeStackParamList} from '../../types';
 import {useFocusEffect} from '@react-navigation/native';
 import {AxiosError} from 'axios';
+import ImageContainer from '../component/ImageContainer';
 
 export type FolderListScreenProps = StackScreenProps<
   HomeStackParamList,
@@ -35,6 +36,7 @@ interface FolderData {
   name: string;
   placeCnt: number;
   type: number;
+  thumbnailUrl: string;
 }
 
 const FolderListScreen = ({navigation, route}: FolderListScreenProps) => {
@@ -173,29 +175,41 @@ const FolderListScreen = ({navigation, route}: FolderListScreenProps) => {
                   });
                 }
               }}>
-              <View
-                style={[
-                  styles.folderImage,
-                  selectedFolders.includes(folder.id) && styles.selectedFolder,
-                ]}>
-                <Text style={styles.folderName}>{folder.name}</Text>
+              <ImageContainer
+                imageUrl={folder.thumbnailUrl}
+                defaultImageUrl={require('../assets/unloaded-image-v3.png')}
+                width="100%"
+                height={180}
+                borderRadius={10}>
                 <View
-                  style={{flexDirection: 'row', alignItems: 'center', gap: 6}}>
-                  <FolderSavedPlaceNum />
-                  <Text style={styles.folderPlaceCnt}>
-                    저장한 장소 · {folder.placeCnt}곳
-                  </Text>
-                </View>
-                {isSelecting && (
-                  <View style={styles.selectionIcon}>
-                    {selectedFolders.includes(folder.id) ? (
-                      <CheckedSpot />
-                    ) : (
-                      <EmptySpot />
-                    )}
+                  style={[
+                    styles.folderImage,
+                    selectedFolders.includes(folder.id) &&
+                      styles.selectedFolder,
+                  ]}>
+                  <Text style={styles.folderName}>{folder.name}</Text>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 6,
+                    }}>
+                    <FolderSavedPlaceNum />
+                    <Text style={styles.folderPlaceCnt}>
+                      저장한 장소 · {folder.placeCnt}곳
+                    </Text>
                   </View>
-                )}
-              </View>
+                  {isSelecting && (
+                    <View style={styles.selectionIcon}>
+                      {selectedFolders.includes(folder.id) ? (
+                        <CheckedSpot />
+                      ) : (
+                        <EmptySpot />
+                      )}
+                    </View>
+                  )}
+                </View>
+              </ImageContainer>
             </Pressable>
           ))}
 
@@ -303,10 +317,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   folderImage: {
-    width: '100%',
     height: 180,
-    backgroundColor: 'black',
-    borderRadius: 10,
     justifyContent: 'flex-end',
     paddingBottom: 20,
     paddingLeft: 15,
