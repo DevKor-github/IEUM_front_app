@@ -1,7 +1,6 @@
 import {
   ActivityIndicator,
   FlatList,
-  Image,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -9,6 +8,7 @@ import {
 } from 'react-native';
 import {IPlace} from '../recoil/place/atom';
 import React from 'react';
+import ImageContainer from './ImageContainer';
 
 export interface IPlaceList {
   placeList: IPlace[];
@@ -23,15 +23,15 @@ const PlaceList = (props: IPlaceList) => {
       onPress={() => props.onPress(item.id)}
       style={styles.card}>
       <View>
-        <Image // todo 동그랗게 수정
-          // source={{uri: item.imageUrl}}
-          source={
-            item?.placeImages[0].url
-              ? {uri: item?.placeImages[0].url}
-              : require('../assets/unloaded-image.png')
-          }
-          style={styles.image}
-        />
+        <View style={styles.image}>
+          <ImageContainer
+            imageUrl={item?.placeImages[0].url}
+            defaultImageUrl={require('../assets/unloaded-image-v2.png')}
+            width="100%"
+            height={220}
+            borderRadius={10}
+          />
+        </View>
         <Text style={styles.title}>{item.name}</Text>
         <Text style={styles.location}>{`${item.simplifiedAddress} ${
           item.category ? '| ' + item.category : ''
@@ -77,13 +77,11 @@ const styles = StyleSheet.create({
     width: '49%',
     marginBottom: 18,
     backgroundColor: '#fff',
-    borderRadius: 10,
     overflow: 'hidden',
   },
   image: {
-    width: '100%',
     marginBottom: 10,
-    height: 220,
+    width: '100%',
   },
   title: {
     fontSize: 17,
