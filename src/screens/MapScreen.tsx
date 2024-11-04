@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
     // alignItems: 'center',
     // alignContent: 'center',
     // justifyContent: 'center',
-    zIndex: 9999,
+    zIndex: 0,
   },
   placeCardCloseButton: {
     marginLeft: 'auto',
