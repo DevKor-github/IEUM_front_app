@@ -204,7 +204,7 @@ const PlaceDetailScreen = ({navigation, route}: PlaceDetailScreenProps) => {
 
         {/* 지도 섹션 */}
         <View style={[styles.section]}>
-          <Text style={styles.sectionTitle}>지도</Text>
+          <Text style={[styles.sectionTitle, {marginBottom: 10}]}>지도</Text>
           <View style={styles.mapImage}>
             <TouchableOpacity
               style={styles.overlay}
@@ -239,7 +239,7 @@ const PlaceDetailScreen = ({navigation, route}: PlaceDetailScreenProps) => {
               />
             </NaverMapView>
           </View>
-          <View style={[styles.flexRow, {marginTop: 11}]}>
+          <View style={[styles.flexRow, {marginTop: 9}]}>
             <TouchableOpacity
               style={[styles.flexRow, {alignItems: 'center'}]}
               onPress={() => copyText(placeDetails?.roadAddress)}>
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   titleContainer: {
-    marginTop: 24,
+    marginTop: 18,
     paddingBottom: 34,
     borderBottomWidth: 1,
     borderBottomColor: '#EFEFEF',
@@ -307,12 +307,12 @@ const styles = StyleSheet.create({
   placeInfo: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
     marginBottom: 18,
   },
   title: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: '600',
+    marginBottom: 4,
   },
   subtitle: {
     fontSize: 13.5,
@@ -325,18 +325,18 @@ const styles = StyleSheet.create({
   flexRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'flex-start',
   },
   section: {
     paddingVertical: 22,
     borderBottomWidth: 1,
     borderBottomColor: '#EFEFEF',
-    fontSize: 14.5,
+    fontSize: 14,
     fontWeight: '400',
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 8,
   },
   timeSection: {
     flexDirection: 'column',
@@ -344,9 +344,9 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   operationTime: {
-    fontSize: 14.5,
+    fontSize: 14,
     fontWeight: '400',
-    marginBottom: 9,
+    marginBottom: 8,
   },
   specialTimes: {},
   specialTimeText: {},
