@@ -5,7 +5,11 @@ import BookmarkIcon from '../assets/bookmark-filled-icon.svg';
 import CloseIcon from '../assets/close-icon.svg';
 import CurrentLocationIcon from '../assets/current-location-icon.svg';
 
-import {BottomSheetModal, BottomSheetView} from '@gorhom/bottom-sheet';
+import {
+  BottomSheetBackdrop,
+  BottomSheetModal,
+  BottomSheetView,
+} from '@gorhom/bottom-sheet';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import placeAtom, {IPlace} from '../recoil/place/atom';
 import {useRecoilState, useRecoilValue, useSetRecoilState} from 'recoil';
@@ -60,7 +64,7 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
   // const [isModalOpen, setIsModalOpen] = useState(false);
 
   // variables
-  const snapPoints = useMemo(() => ['25%', '80%'], []);
+  const snapPoints = useMemo(() => ['25%', '85%'], []);
 
   // callbacks
   const handleSheetChanges = useCallback((index: number) => {
@@ -313,6 +317,19 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
     getPlaceInFolder(id);
   };
 
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        pressBehavior="close"
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+      />
+    ),
+
+    [],
+  );
+
   const renderFolder = () => {
     const renderItem = ({item}: {item: IFolder}) => (
       <TouchableOpacity onPress={() => pressFolder(item.id)}>
@@ -375,7 +392,8 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
         ref={bottomSheetModalRef}
         index={0}
         snapPoints={snapPoints}
-        onChange={handleSheetChanges}>
+        onChange={handleSheetChanges}
+        backdropComponent={renderBackdrop}>
         <BottomSheetView style={styles.contentContainer}>
           <View>
             {renderTopSection()}

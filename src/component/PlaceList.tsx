@@ -29,7 +29,7 @@ const PlaceList = (props: IPlaceList) => {
             defaultImageUrl={require('../assets/unloaded-image-v2.png')}
             width="100%"
             height={220}
-            borderRadius={10}
+            borderRadius={6}
           />
         </View>
         <Text style={styles.title}>{item.name}</Text>
@@ -80,16 +80,16 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   image: {
-    marginBottom: 10,
+    marginBottom: 8, // todo 너무 좁지 않은가?
     width: '100%',
   },
   title: {
-    fontSize: 17,
+    fontSize: 15,
     fontWeight: '600',
-    marginBottom: 2,
+    marginBottom: 4,
   },
   location: {
-    fontSize: 12.5,
+    fontSize: 12,
     color: '#888',
   },
   loader: {
