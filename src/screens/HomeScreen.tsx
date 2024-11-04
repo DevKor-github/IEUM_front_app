@@ -183,7 +183,12 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const renderFolders = () => {
     const folderItems = folders.slice(0, 4).map((folder, index) => (
       <>
-        <View key={folder.id} style={[{marginRight: index % 2 === 0 ? 8 : 0}]}>
+        <View
+          key={folder.id}
+          style={{
+            marginRight: index % 2 === 0 ? 8 : 0,
+            marginBottom: index % 2 === 0 ? 8 : 0,
+          }}>
           <ImageContainer
             imageUrl={folder.thumbnailUrl}
             defaultImageUrl={require('../assets/unloaded-image-v3.png')}
@@ -493,6 +498,10 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.35)',
     borderWidth: 1,
     borderRadius: 65,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.25,
+    shadowRadius: 3,
   },
   addLinkButtonText: {
     fontSize: 13.5,
