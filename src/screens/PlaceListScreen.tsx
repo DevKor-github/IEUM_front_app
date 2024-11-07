@@ -1,18 +1,15 @@
-import {useEffect, useState, useCallback} from 'react';
+import React, {useEffect, useState, useCallback} from 'react';
 import {
   View,
   StyleSheet,
   Text,
   SafeAreaView,
   Pressable,
-  Dimensions,
-  ScrollView,
   Alert,
+  Dimensions,
 } from 'react-native';
 import {StackScreenProps} from '@react-navigation/stack';
 import BackButton from '../assets/back-button.svg';
-import CheckedSpot from '../assets/checked-spot.svg';
-import EmptySpot from '../assets/empty-circle.svg';
 import SelectIcon from '../assets/select-icon.svg';
 import DeleteIcon from '../assets/delete-icon.svg';
 import SavedPlaceNum from '../assets/saved-place-num.svg';
@@ -20,7 +17,8 @@ import {API} from '../api/base';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import {HomeStackParamList} from '../../types';
 import {useFocusEffect} from '@react-navigation/native';
-import ImageContainer from '../component/ImageContainer';
+import PlaceList from '../component/PlaceList';
+import {IPlace} from '../recoil/place/atom';
 
 export type PlaceListScreenProps = StackScreenProps<
   HomeStackParamList,
@@ -29,17 +27,9 @@ export type PlaceListScreenProps = StackScreenProps<
 
 const dWidth = Dimensions.get('window').width;
 
-interface Place {
-  id: number;
-  name: string;
-  simplifiedAddress: string;
-  ieumCategory: string;
-  imageUrl: string;
-}
-
 const PlaceListScreen = ({navigation, route}: PlaceListScreenProps) => {
   const [defaultId, setDefaultId] = useState(0);
-  const [savedPlaces, setSavedPlaces] = useState<Place[]>([]);
+  const [savedPlaces, setSavedPlaces] = useState<IPlace[]>([]);
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectedPlaces, setSelectedPlaces] = useState<number[]>([]);
   const [cursorId, setCursorId] = useState<number | null>(0);
@@ -77,7 +67,24 @@ const PlaceListScreen = ({navigation, route}: PlaceListScreenProps) => {
         },
       });
 
-      const data = res.data.items;
+      const data = res.data.items.map((place: any) => ({
+        id: place.id,
+        name: place.name,
+        simplifiedAddress: place.simplifiedAddress,
+        ieumCategory: place.ieumCategory,
+        placeImages: [
+          {
+            url: place.imageUrl,
+            authorName: '',
+            authorUri: '',
+          },
+        ],
+        category: '',
+        address: '',
+        roadAddress: '',
+        phone: '',
+      }));
+      
       const meta = res.data.meta;
 
       setSavedPlaces(prev => [...prev, ...data]);
@@ -162,6 +169,7 @@ const PlaceListScreen = ({navigation, route}: PlaceListScreenProps) => {
           borderBottomColor: 'black',
           borderBottomWidth: 2.2,
           marginTop: 40,
+          marginBottom: 22,
         }}>
         <View>
           <Text style={{fontSize: 20, fontWeight: '700', marginBottom: 4}}>
@@ -193,59 +201,16 @@ const PlaceListScreen = ({navigation, route}: PlaceListScreenProps) => {
         </View>
       </View>
 
-      <ScrollView
-        contentContainerStyle={styles.scrollViewContent}
-        onScroll={({nativeEvent}) => {
-          const paddingToBottom = 10;
-          if (
-            nativeEvent.layoutMeasurement.height +
-              nativeEvent.contentOffset.y >=
-            nativeEvent.contentSize.height - paddingToBottom
-          ) {
-            handleLoadMore();
-          }
-        }}
-        scrollEventThrottle={400}>
-        <View style={styles.placeGrid}>
-          {savedPlaces.map((place, index) => (
-            <Pressable
-              key={place.id}
-              style={[styles.placeItem, {marginRight: index % 2 === 0 ? 8 : 0}]}
-              onPress={() =>
-                isSelecting
-                  ? toggleSelection(place.id)
-                  : navigation.navigate('PlaceDetail', {placeId: place.id})
-              }>
-              <ImageContainer
-                imageUrl={place.imageUrl}
-                defaultImageUrl={require('../assets/unloaded-image-v2.png')}
-                width="100%"
-                height={218}
-                borderRadius={10}>
-                <View
-                  style={[
-                    selectedPlaces.includes(place.id) && styles.selectedPlace,
-                  ]}
-                />
-              </ImageContainer>
-
-              <Text style={styles.placeName}>{place.name}</Text>
-              <Text style={styles.placeInfo}>
-                {place.simplifiedAddress} | {place.ieumCategory}
-              </Text>
-              {isSelecting && (
-                <View style={styles.selectionIcon}>
-                  {selectedPlaces.includes(place.id) ? (
-                    <CheckedSpot />
-                  ) : (
-                    <EmptySpot />
-                  )}
-                </View>
-              )}
-            </Pressable>
-          ))}
-        </View>
-      </ScrollView>
+      <PlaceList
+        placeList={savedPlaces}
+        onPress={(id) =>
+          isSelecting
+            ? toggleSelection(id)
+            : navigation.navigate('PlaceDetail', { placeId: id })
+        }
+        loading={isLoadingMore}
+        load={handleLoadMore}
+      />
     </SafeAreaView>
   );
 };
@@ -321,52 +286,6 @@ const styles = StyleSheet.create({
     fontSize: 13.5,
     fontWeight: '500',
     color: '#F00',
-  },
-  scrollViewContent: {
-    alignItems: 'flex-start',
-    paddingBottom: 30,
-    paddingTop: 25,
-  },
-  placeGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
-  },
-  placeItem: {
-    width: (dWidth - 70) / 2,
-    marginBottom: 20,
-    position: 'relative',
-  },
-  placeImage: {
-    width: '100%',
-    height: 218,
-    borderRadius: 10,
-    backgroundColor: 'grey',
-  },
-  selectedPlace: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'grey',
-    borderRadius: 10,
-    opacity: 0.7,
-  },
-  placeName: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#121212',
-    marginTop: 8,
-  },
-  placeInfo: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#A4A4A4',
-    marginTop: 4,
-  },
-  selectionIcon: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
   },
 });
 
