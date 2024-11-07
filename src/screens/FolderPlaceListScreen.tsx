@@ -6,11 +6,10 @@ import {
   SafeAreaView,
   Pressable,
   Dimensions,
-  ScrollView,
   Alert,
   Modal,
-  FlatList,
   Share,
+  FlatList
 } from 'react-native';
 import {StackScreenProps} from '@react-navigation/stack';
 import BackButton from '../assets/back-button.svg';
@@ -24,6 +23,8 @@ import {API} from '../api/base';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import {HomeStackParamList} from '../../types';
 import {AxiosError} from 'axios';
+import PlaceList from '../component/PlaceList';
+import {IPlace} from '../recoil/place/atom';
 
 export type FolderPlaceListScreenProps = StackScreenProps<
   HomeStackParamList,
@@ -31,14 +32,6 @@ export type FolderPlaceListScreenProps = StackScreenProps<
 >;
 
 const dWidth = Dimensions.get('window').width;
-
-interface Place {
-  id: number;
-  name: string;
-  simplifiedAddress: string;
-  ieumCategory: string;
-  imageUrl: string;
-}
 
 interface Folder {
   id: number;
@@ -52,7 +45,7 @@ const FolderPlaceListScreen = ({
   route,
 }: FolderPlaceListScreenProps) => {
   const {folderId, folderName} = route.params;
-  const [savedPlaces, setSavedPlaces] = useState<Place[]>([]);
+  const [savedPlaces, setSavedPlaces] = useState<IPlace[]>([]);
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectedPlaces, setSelectedPlaces] = useState<number[]>([]);
   const [isBottomSheetVisible, setIsBottomSheetVisible] = useState(false);
@@ -81,7 +74,23 @@ const FolderPlaceListScreen = ({
         },
       });
 
-      const data = res.data.items;
+      const data = res.data.items.map((place: any) => ({
+        id: place.id,
+        name: place.name,
+        simplifiedAddress: place.simplifiedAddress,
+        ieumCategory: place.ieumCategory,
+        placeImages: [
+          {
+            url: place.imageUrl,
+            authorName: '',
+            authorUri: '',
+          },
+        ],
+        category: '',
+        address: '',
+        roadAddress: '',
+        phone: '',
+      }));
       const meta = res.data.meta;
 
       setSavedPlaces(prev => [...prev, ...data]);
@@ -284,6 +293,7 @@ const FolderPlaceListScreen = ({
           borderBottomWidth: 2.2,
           paddingBottom: 13,
           marginTop: 40,
+          marginBottom: 22
         }}>
         <View>
           <Text style={{fontSize: 20, fontWeight: '700', marginBottom: 4}}>
@@ -306,7 +316,6 @@ const FolderPlaceListScreen = ({
             alignItems: 'center',
           }}
           onPress={async () => await Share.share({message: '보관함 공유'})}>
-          {/*추후 추가: 딥링크 공유*/}
           <ShareIcon />
           <Text style={{fontSize: 14, fontWeight: '600', color: '#FFF'}}>
             공유
@@ -314,65 +323,18 @@ const FolderPlaceListScreen = ({
         </Pressable>
       </View>
 
-      <ScrollView
-        contentContainerStyle={styles.scrollViewContent}
-        onScroll={({nativeEvent}) => {
-          const paddingToBottom = 10;
-          if (
-            nativeEvent.layoutMeasurement.height +
-              nativeEvent.contentOffset.y >=
-            nativeEvent.contentSize.height - paddingToBottom
-          ) {
-            handleLoadMore();
+      <PlaceList
+        placeList={savedPlaces}
+        onPress={placeId => {
+          if (isSelecting) {
+            toggleSelection(placeId);
+          } else {
+            navigation.navigate('PlaceDetail', {placeId});
           }
         }}
-        scrollEventThrottle={400}>
-        <View style={styles.placeGrid}>
-          {savedPlaces.map((place, index) => (
-            <Pressable
-              key={place.id}
-              style={[
-                styles.placeItem,
-                {
-                  marginRight:
-                    savedPlaces.length % 2 === 1 &&
-                    index === savedPlaces.length - 1
-                      ? (dWidth - 70) / 4
-                      : index % 2 === 0
-                      ? 8
-                      : 0,
-                },
-              ]}
-              onPress={() => {
-                if (isSelecting) {
-                  toggleSelection(place.id);
-                } else {
-                  navigation.navigate('PlaceDetail', {placeId: place.id});
-                }
-              }}>
-              <View
-                style={[
-                  styles.placeImage,
-                  selectedPlaces.includes(place.id) && styles.selectedPlace,
-                ]}
-              />
-              <Text style={styles.placeName}>{place.name}</Text>
-              <Text style={styles.placeInfo}>
-                {place.simplifiedAddress} | {place.ieumCategory}
-              </Text>
-              {isSelecting && (
-                <View style={styles.selectionIcon}>
-                  {selectedPlaces.includes(place.id) ? (
-                    <CheckedSpot />
-                  ) : (
-                    <EmptySpot />
-                  )}
-                </View>
-              )}
-            </Pressable>
-          ))}
-        </View>
-      </ScrollView>
+        loading={isLoadingMore}
+        load={handleLoadMore}
+      />
 
       {selectedPlaces.length > 0 && (
         <Pressable
@@ -391,7 +353,6 @@ const FolderPlaceListScreen = ({
         </Pressable>
       )}
 
-      {/* Modal for folder selection */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -440,7 +401,6 @@ const FolderPlaceListScreen = ({
         </Pressable>
       </Modal>
 
-      {/* Modal for three dot menu */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -699,5 +659,6 @@ const styles = StyleSheet.create({
     color: '#007AFF',
   },
 });
+
 
 export default FolderPlaceListScreen;
