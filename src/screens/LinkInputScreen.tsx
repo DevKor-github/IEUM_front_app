@@ -48,14 +48,14 @@ const LinkInputScreen = ({navigation, route}: LinkInputScreenProps) => {
       const requestBody = {
         link: requestUrl,
       };
-      const accessToken = await EncryptedStorage.getItem('accessToken');
+      const refreshToken = await EncryptedStorage.getItem('refreshToken');
       const response = await API.post('/crawling', requestBody, {
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${refreshToken}`,
         },
       });
-
+      console.log(response)
       navigation.navigate('Home');
     } catch (error) {
       console.error(error);
