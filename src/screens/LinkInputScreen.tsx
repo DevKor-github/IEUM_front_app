@@ -55,7 +55,6 @@ const LinkInputScreen = ({navigation, route}: LinkInputScreenProps) => {
           Authorization: `Bearer ${refreshToken}`,
         },
       });
-      console.log(response)
       navigation.navigate('Home');
     } catch (error) {
       console.error(error);
