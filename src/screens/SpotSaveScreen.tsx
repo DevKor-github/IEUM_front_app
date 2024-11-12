@@ -24,6 +24,7 @@ import EmptySpot from '../assets/empty-circle.svg';
 import SelectIcon from '../assets/select-icon.svg';
 import SavedPlaceNum from '../assets/saved-place-num.svg';
 import SpotSaveIcon from '../assets/bookmark-selected-icon.svg';
+import SpotUnSaveIcon from '../assets/bookmark-non-selected-icon.svg';
 import {useFocusEffect} from '@react-navigation/native';
 
 export type SpotSaveScreenProps = StackScreenProps<
@@ -44,6 +45,7 @@ interface Folder {
   name: string;
   type: number;
   placeCnt: number;
+  placeExistence: boolean;
 }
 
 const dWidth = Dimensions.get('window').width;
@@ -64,6 +66,58 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
   const [placesCursorId, setPlacesCursorId] = useState<number | null>(0);
   const [isFetchingSavedPlaces, setIsFetchingSavedPlaces] = useState(false);
   const [isFetchingPlaces, setIsFetchingPlaces] = useState(false);
+  const [isSpotSaved, setIsSpotSaved] = useState(true);
+  const [defaultId, setDefaultId] = useState(0);
+  const [existingFolders, setExistingFolders] = useState<number[]>([]);
+
+  useFocusEffect(() => {
+    async function getDefaultId() {
+      const accessToken = await EncryptedStorage.getItem('accessToken');
+      const res = await API.get('/folders/default', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      setDefaultId(res.data.id);
+    }
+    getDefaultId();
+  });
+
+  useEffect(() => {
+    if (isBottomSheetVisible) {
+      setIsSpotSaved(true);
+    }
+  }, [isBottomSheetVisible]);
+
+  const handleSpotUnsave = async () => {
+    try {
+      const accessToken = await EncryptedStorage.getItem('accessToken');
+      await API.delete(`/folders/${defaultId}/folder-places`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        data: {
+          placeIds: selectedPlaces,
+        },
+      });
+
+      setIsSpotSaved(false); // 저장 취소 시 상태 업데이트
+      setPlaces(prevPlaces =>
+        prevPlaces.map(place =>
+          selectedPlaces.includes(place.placeId)
+            ? {...place, isSaved: false}
+            : place,
+        ),
+      );
+
+      setTimeout(() => {
+        setIsBottomSheetVisible(false);
+      }, 300);
+    } catch (error) {
+      console.error('Error unsaving spot:', error);
+      Alert.alert('Error', 'An error occurred while unsaving the place.');
+    }
+  };
 
   useFocusEffect(() => {
     const fetchSavedPlaces = async () => {
@@ -150,7 +204,6 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
     getFolder();
   }, [navigation]);
 
-  // Toggle selection of a place for saving or removing from saved places
   const toggleSelection = (placeId: number) => {
     setSelectedPlaces(prevSelected =>
       prevSelected.includes(placeId)
@@ -180,7 +233,7 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
       const savedFolder = savedPlaces.find(place => place.id === placeId);
 
       if (savedFolder) {
-        setSelectedFolderId(savedFolder.id); // Set the selected folder ID
+        setSelectedFolderId(savedFolder.id);
       }
       setIsBottomSheetVisible(true);
       setSelectedPlaces([placeId]);
@@ -312,7 +365,15 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
           {item.simplifiedAddress} | {item.ieumCategory}
         </Text>
       </View>
-      {isSelecting ? (
+
+      {isSelecting &&
+      (item.isSaved ||
+        (savedPlaces &&
+          savedPlaces.some(place => place.id === item.placeId))) ? (
+        <View style={styles.savedLabelContainer}>
+          <Text style={styles.savedLabelText}>저장된 장소입니다</Text>
+        </View>
+      ) : isSelecting ? (
         <Pressable onPress={() => toggleSelection(item.placeId)}>
           {selectedPlaces.includes(item.placeId) ? (
             <CheckedSpot />
@@ -341,7 +402,7 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
             {item.isSaved ||
             (savedPlaces &&
               savedPlaces.some(place => place.id === item.placeId))
-              ? '보관함에 저장됨'
+              ? '보관함에 저장'
               : '보관함에 저장'}
           </Text>
           {item.isSaved ||
@@ -356,36 +417,97 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
     </View>
   );
 
-  const renderFolderItem = ({item}: {item: Folder}) => (
-    <Pressable
-      style={styles.folderItem}
-      onPress={() => {
-        setSelectedFolderId(item.id);
-        setTimeout(() => {
-          setSelectedFolderId(null);
-        }, 500);
-        setIsBottomSheetVisible(false);
-        saveToSelectedFolder(item.id);
-      }}>
-      <View style={styles.folderInfoContainer}>
-        <View style={styles.folderIcon} />
-        <View>
-          <Text style={styles.folderName}>{item.name}</Text>
-          <View style={styles.folderDetailContainer}>
-            <SavedPlaceNum />
-            <Text style={styles.folderPlaceCnt}>
-              저장한 장소 · {item.placeCnt}곳
-            </Text>
+  const fetchFoldersContainingPlace = async (placeId: number) => {
+    try {
+      const accessToken = await EncryptedStorage.getItem('accessToken');
+      const res = await API.get(`/places/${placeId}/folders`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      const folderList = res.data.items;
+      const folderIdsWithPlace = folderList
+        .filter((folder: Folder) => folder.placeExistence)
+        .map((folder: Folder) => folder.id);
+
+      setExistingFolders(folderIdsWithPlace);
+    } catch (error) {
+      console.error('Error fetching folders containing place:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (isBottomSheetVisible && selectedPlaces.length > 0) {
+      fetchFoldersContainingPlace(selectedPlaces[0]);
+    }
+  }, [isBottomSheetVisible, selectedPlaces]);
+
+  const removePlaceFromFolder = async (folderId: number, placeId: number) => {
+    try {
+      const accessToken = await EncryptedStorage.getItem('accessToken');
+      await API.delete(`/folders/${folderId}/folder-places`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        data: {
+          placeIds: [placeId],
+        },
+      });
+
+      setExistingFolders(prevFolders =>
+        prevFolders.filter(id => id !== folderId),
+      );
+    } catch (error) {
+      console.error('Error removing place from folder:', error);
+      Alert.alert(
+        'Error',
+        'An error occurred while removing the place from the folder.',
+      );
+    }
+    setIsBottomSheetVisible(false);
+  };
+
+  const renderFolderItem = ({item}: {item: Folder}) => {
+    const isFolderContainingPlace = existingFolders.includes(item.id);
+
+    return (
+      <Pressable
+        style={styles.folderItem}
+        onPress={() => {
+          setSelectedFolderId(item.id);
+          setTimeout(() => {
+            setSelectedFolderId(null);
+          }, 500);
+          setIsBottomSheetVisible(false);
+          saveToSelectedFolder(item.id);
+        }}>
+        <View style={styles.folderInfoContainer}>
+          <View style={styles.folderIcon} />
+          <View>
+            <Text style={styles.folderName}>{item.name}</Text>
+            <View style={styles.folderDetailContainer}>
+              <SavedPlaceNum />
+              <Text style={styles.folderPlaceCnt}>
+                저장한 장소 · {item.placeCnt}곳
+              </Text>
+            </View>
           </View>
+          <Pressable
+            onPress={() => {
+              if (isFolderContainingPlace) {
+                removePlaceFromFolder(item.id, selectedPlaces[0]);
+              } else {
+                saveToSelectedFolder(item.id);
+              }
+            }}
+            style={{marginLeft: 'auto'}}>
+            {isFolderContainingPlace ? <CheckedSpot /> : <PlusIcon />}
+          </Pressable>
         </View>
-        {selectedFolderId === item.id ? ( // Check if the folder is selected
-          <CheckedSpot style={{marginLeft: 'auto'}} />
-        ) : (
-          <PlusIcon style={{marginLeft: 'auto'}} />
-        )}
-      </View>
-    </Pressable>
-  );
+      </Pressable>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -560,7 +682,11 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
                       </Text>
                     </View>
                   </View>
-                  <SpotSaveIcon style={{marginLeft: 'auto'}} />
+                  <Pressable
+                    onPress={handleSpotUnsave}
+                    style={{marginLeft: 'auto'}}>
+                    {isSpotSaved ? <SpotSaveIcon /> : <SpotUnSaveIcon />}
+                  </Pressable>
                 </View>
 
                 <View
@@ -830,6 +956,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#FFF',
     fontWeight: '700',
+  },
+  savedLabelContainer: {
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    backgroundColor: '#EFEFEF',
+    borderRadius: 4,
+    alignSelf: 'center',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  savedLabelText: {
+    fontSize: 12,
+    color: '#A4A4A4',
+    fontWeight: '500',
   },
 });
 
