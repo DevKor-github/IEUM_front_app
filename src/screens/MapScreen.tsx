@@ -1,4 +1,11 @@
-import {Dimensions, ScrollView, StyleSheet, Text, View} from 'react-native';
+import {
+  Dimensions,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import {
   Camera,
   NaverMapMarkerOverlay,
@@ -14,6 +21,22 @@ import BookmarkIcon from '../assets/bookmark-selected-icon.svg';
 import TabIcon from '../assets/tab-icon.svg';
 import CurrentLocationIcon from '../assets/current-location-icon.svg';
 import CloseIcon from '../assets/close-icon.svg';
+
+// marker svg
+import AlcoholMarkerIcon from '../assets/marker/alcohol.svg';
+import SelectedAlcoholMarkerIcon from '../assets/marker/alcohol-selected.svg';
+import FoodMarkerIcon from '../assets/marker/food.svg';
+import SelectedFoodMarkerIcon from '../assets/marker/food-selected.svg';
+import CafeMarkerIcon from '../assets/marker/cafe.svg';
+import SelectedCafeMarkerIcon from '../assets/marker/cafe-selected.svg';
+import MuseumMarkerIcon from '../assets/marker/museum.svg';
+import SelectedMuseumMarkerIcon from '../assets/marker/museum-selected.svg';
+import StayMarkerIcon from '../assets/marker/stay.svg';
+import SelectedStayMarkerIcon from '../assets/marker/stay-selected.svg';
+import ShoppingMarkerIcon from '../assets/marker/shopping.svg';
+import SelectedShoppingMarkerIcon from '../assets/marker/shopping-selected.svg';
+import OtherMarkerIcon from '../assets/marker/others.svg';
+import SelectedOtherMarkerIcon from '../assets/marker/others-selected.svg';
 
 import {useRecoilState, useRecoilValue} from 'recoil';
 import placeWithFilter from '../recoil/place/withFilter';
@@ -32,6 +55,7 @@ import {API} from '../api/base';
 import markerAtom, {IMarker} from '../recoil/marker/atom';
 import HashTags from '../component/HashTags';
 import ImageContainer from '../component/ImageContainer';
+import {Regions} from '../recoil/region/atom';
 
 export type MapScreenProps = StackScreenProps<MapStackParamList, 'Map'>;
 
@@ -40,7 +64,6 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
   const filterBottomSheetModalRef = useRef<BottomSheetModal>(null);
 
   // const places: IPlace[] = useRecoilValue(placeAtom);
-  const filteredPlace: IPlace[] = useRecoilValue(placeWithFilter);
   const selectedFolder = useRecoilValue(folderWithSelected);
   const regions = useRecoilValue(regionAtom);
   const places = useRecoilValue(placeAtom);
@@ -54,11 +77,24 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
   const [initialLocation, setInitialLocation] = useState({});
 
   useEffect(() => {
-    getMarkerList();
-  }, []);
+    getMarkerList(categories, regions);
+  }, [categories, regions]);
 
-  const getMarkerList = async () => {
-    const res = await API.get('/folders/default/markers');
+  const getMarkerList = async (
+    categoryList: Categories[] = [],
+    regionList: Regions[] = [],
+  ) => {
+    const params = new URLSearchParams();
+    if (categoryList && categoryList?.length > 0) {
+      categoryList?.forEach(category =>
+        params.append('categoryList', category),
+      );
+    }
+    if (regionList && regionList?.length > 0) {
+      regionList?.forEach(region => params.append('addressList', region));
+    }
+
+    const res = await API.get(`/folders/default/markers?${params.toString()}`);
     const {items} = res.data;
     const markerList: IMarker[] = items.map((marker: any) => {
       const markerCategory = mapServerCategoryToEnum(marker.ieumCategory);
@@ -97,12 +133,12 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
   };
 
   const handleMarkerPress = (index: number) => {
-    let open = false;
+    // let open = false;
     if (selectedMarkerIndex === index) {
       index = -1;
-      open = true;
+      // open = true;
     }
-    setIsOpenModal(open);
+    // setIsOpenModal(open);
     setSelectedMarkerIndex(index);
   };
 
@@ -156,7 +192,11 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
 
     return (
       <>
-        <View style={styles.placeCardContainer}>
+        <TouchableOpacity
+          style={styles.placeCardContainer}
+          onPress={() => {
+            navigation.navigate('PlaceDetail', {placeId: placeInfo?.id});
+          }}>
           <View style={styles.placeCardCloseButton}>
             <CircleButton
               onPress={() => handleMarkerPress(placeInfo?.id)}
@@ -186,9 +226,35 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
               </Text>
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
       </>
     );
+  };
+
+  const getIconByCategory = (
+    category: Categories,
+    selected: boolean = false,
+  ) => {
+    switch (category) {
+      case Categories.FOOD:
+        return selected ? <SelectedFoodMarkerIcon /> : <FoodMarkerIcon />;
+      case Categories.CAFE:
+        return selected ? <SelectedCafeMarkerIcon /> : <CafeMarkerIcon />;
+      case Categories.ALCOHOL:
+        return selected ? <SelectedAlcoholMarkerIcon /> : <AlcoholMarkerIcon />;
+      case Categories.MUSEUM:
+        return selected ? <SelectedMuseumMarkerIcon /> : <MuseumMarkerIcon />;
+      case Categories.STAY:
+        return selected ? <SelectedStayMarkerIcon /> : <StayMarkerIcon />;
+      case Categories.SHOPPING:
+        return selected ? (
+          <SelectedShoppingMarkerIcon />
+        ) : (
+          <ShoppingMarkerIcon />
+        );
+      default:
+        return selected ? <SelectedOtherMarkerIcon /> : <OtherMarkerIcon />;
+    }
   };
 
   return (
@@ -210,13 +276,22 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
                 caption={{
                   text: item.name,
                 }}
-                image={require('../assets/cafe-icon.png')}
-              />
+                width={20}
+                height={20}>
+                <View
+                  key={`${item.id}_${item.id === selectedMarkerIndex}`}
+                  collapsable={false}
+                  style={{width: 50, height: 50}}>
+                  {getIconByCategory(
+                    item.category,
+                    item.id === selectedMarkerIndex,
+                  )}
+                </View>
+              </NaverMapMarkerOverlay>
             ))}
           </NaverMapView>
 
           {renderFilterSection()}
-          {selectedMarkerIndex !== -1 && renderSummaryCard(selectedMarkerIndex)}
           <View style={styles.floatButtonContainer}>
             <CircleButton onPress={handlePresentModalPress} icon={TabIcon} />
             {!isOpenModal && (
@@ -226,6 +301,7 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
               />
             )}
           </View>
+          {selectedMarkerIndex !== -1 && renderSummaryCard(selectedMarkerIndex)}
 
           <PlaceBottomSheet
             bottomSheetModalRef={bottomSheetModalRef}
@@ -293,7 +369,6 @@ const styles = StyleSheet.create({
     // alignItems: 'center',
     // alignContent: 'center',
     // justifyContent: 'center',
-    zIndex: 0,
   },
   placeCardCloseButton: {
     marginLeft: 'auto',
