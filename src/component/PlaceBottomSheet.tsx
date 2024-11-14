@@ -317,11 +317,17 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
     getPlaceInFolder(id);
   };
 
+  const handleCloseFolder = () => {
+    setSelectedFolderIndex(null);
+    setPlaceInFolder([]);
+  };
+
   const renderBackdrop = useCallback(
     (props: any) => (
       <BottomSheetBackdrop
         {...props}
         pressBehavior="close"
+        onPress={handleCloseFolder}
         appearsOnIndex={0}
         disappearsOnIndex={-1}
       />
@@ -372,10 +378,7 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
     <>
       {selectedFolder && isModalOpen && (
         <View style={styles.floatButtonContainer}>
-          <CircleButton
-            onPress={() => setSelectedFolderIndex(null)}
-            icon={CloseIcon}
-          />
+          <CircleButton onPress={handleCloseFolder} icon={CloseIcon} />
         </View>
       )}
 
@@ -539,7 +542,7 @@ const styles = StyleSheet.create({
   floatButtonContainer: {
     position: 'absolute',
     right: 24,
-    top: 80,
+    top: 60,
     zIndex: 9000,
   },
   floatCurrentLocationButtonContainer: {
