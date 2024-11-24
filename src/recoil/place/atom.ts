@@ -25,10 +25,10 @@ export interface IPlace {
 export interface ILinkCollection {
   id: number;
   link: string;
-  collectionType: number;
+  collectionType: string;
   content: string;
   isViewed: boolean;
-  updateAt: string;
+  updatedAt: string;
 }
 
 export interface IPlaceImage {

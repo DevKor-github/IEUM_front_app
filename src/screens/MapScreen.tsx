@@ -1,11 +1,4 @@
-import {
-  Dimensions,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import {Dimensions, ScrollView, StyleSheet, View} from 'react-native';
 import {
   Camera,
   NaverMapMarkerOverlay,
@@ -17,10 +10,8 @@ import {BottomSheetModal, BottomSheetModalProvider} from '@gorhom/bottom-sheet';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import FilterIcon from '../assets/filter-icon.svg';
 import SelectedFilterIcon from '../assets/selected-filter-icon.svg';
-import BookmarkIcon from '../assets/bookmark-selected-icon.svg';
 import TabIcon from '../assets/tab-icon.svg';
 import CurrentLocationIcon from '../assets/current-location-icon.svg';
-import CloseIcon from '../assets/close-icon.svg';
 
 // marker svg
 import AlcoholMarkerIcon from '../assets/marker/alcohol.svg';
@@ -39,8 +30,7 @@ import OtherMarkerIcon from '../assets/marker/others.svg';
 import SelectedOtherMarkerIcon from '../assets/marker/others-selected.svg';
 
 import {useRecoilState, useRecoilValue} from 'recoil';
-import placeWithFilter from '../recoil/place/withFilter';
-import placeAtom, {IPlace} from '../recoil/place/atom';
+import placeAtom from '../recoil/place/atom';
 import SelectButton from '../component/SelectButton';
 import categoryAtom, {
   Categories,
@@ -53,9 +43,8 @@ import FilterBottomSheet from '../component/FilterBottomSheet';
 import regionAtom from '../recoil/region';
 import {API} from '../api/base';
 import markerAtom, {IMarker} from '../recoil/marker/atom';
-import HashTags from '../component/HashTags';
-import ImageContainer from '../component/ImageContainer';
 import {Regions} from '../recoil/region/atom';
+import SummaryCard from '../component/SummaryCard';
 
 export type MapScreenProps = StackScreenProps<MapStackParamList, 'Map'>;
 
@@ -186,51 +175,6 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
     );
   };
 
-  const renderSummaryCard = (selectedMarkerIndex: number) => {
-    const placeInfo = places.find(item => item.id === selectedMarkerIndex);
-    if (!placeInfo) return;
-
-    return (
-      <>
-        <TouchableOpacity
-          style={styles.placeCardContainer}
-          onPress={() => {
-            navigation.navigate('PlaceDetail', {placeId: placeInfo?.id});
-          }}>
-          <View style={styles.placeCardCloseButton}>
-            <CircleButton
-              onPress={() => handleMarkerPress(placeInfo?.id)}
-              icon={CloseIcon}
-            />
-          </View>
-          <View style={styles.placeCard}>
-            <View style={styles.placeCardImage}>
-              <ImageContainer
-                imageUrl={placeInfo?.placeImages[0]?.url}
-                defaultImageUrl={require('../assets/unloaded-image-v3.png')}
-                width={120}
-                height={130}
-                borderRadius={10}
-              />
-            </View>
-            <View style={styles.placeCardContent}>
-              <View style={styles.bookmarkIcon}>
-                <BookmarkIcon />
-              </View>
-              <Text style={styles.placeCardTitle}>{placeInfo.name}</Text>
-              <Text style={styles.placeCardLocation}>
-                {placeInfo.simplifiedAddress}
-              </Text>
-              <Text style={styles.placeCardTags}>
-                <HashTags hashtags={placeInfo.hashTags} />
-              </Text>
-            </View>
-          </View>
-        </TouchableOpacity>
-      </>
-    );
-  };
-
   const getIconByCategory = (
     category: Categories,
     selected: boolean = false,
@@ -301,7 +245,15 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
               />
             )}
           </View>
-          {selectedMarkerIndex !== -1 && renderSummaryCard(selectedMarkerIndex)}
+          {selectedMarkerIndex !== -1 && (
+            <SummaryCard
+              placeId={selectedMarkerIndex}
+              onClose={() => handleMarkerPress(selectedMarkerIndex)}
+              onNavigate={id =>
+                navigation.navigate('PlaceDetail', {placeId: id})
+              }
+            />
+          )}
 
           <PlaceBottomSheet
             bottomSheetModalRef={bottomSheetModalRef}
