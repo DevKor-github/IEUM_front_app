@@ -13,9 +13,10 @@ import {MapStackParamList} from '../../types';
 import BookmarkIcon from '../assets/bookmark-icon.svg';
 import PhoneIcon from '../assets/phone-icon.svg';
 import InstaIcon from '../assets/insta-icon.svg';
+import NaverIcon from '../assets/naver-icon.svg';
 import CopyIcon from '../assets/copy-icon.svg';
 import PlaceConvenienceSection from '../component/PlaceConvenienceSection';
-import {IPlace, PlaceConvenience} from '../recoil/place/atom';
+import {ILinkCollection, IPlace, PlaceConvenience} from '../recoil/place/atom';
 import {
   NaverMapMarkerOverlay,
   NaverMapView,
@@ -180,6 +181,10 @@ const PlaceDetailScreen = ({navigation, route}: PlaceDetailScreenProps) => {
     Alert.alert('성공', '텍스트가 클립보드에 복사되었습니다!');
   };
 
+  const handleToGoLink = (url: string) => {
+    Linking.openURL(url);
+  };
+
   return (
     <ScrollView style={styles.container}>
       {/* Header 이미지 */}
@@ -260,26 +265,34 @@ const PlaceDetailScreen = ({navigation, route}: PlaceDetailScreenProps) => {
         {/* 내가 확인한 링크 섹션 */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>내가 확인한 링크</Text>
-          {placeDetails?.linkedCollections.map((link: any, index) => (
-            <View key={index} style={styles.linkContainer}>
-              {/*<Image source={{uri: link.icon}} style={styles.linkIcon} />*/}
-              <View style={styles.linkIcon}>
-                <InstaIcon />
+          {placeDetails?.linkedCollections.map(
+            (link: ILinkCollection, index) => (
+              <View key={index} style={styles.linkContainer}>
+                {/*<Image source={{uri: link.icon}} style={styles.linkIcon} />*/}
+                <View style={styles.linkIcon}>
+                  {link.collectionType === 'INSTAGRAM' ? (
+                    <InstaIcon />
+                  ) : (
+                    <NaverIcon />
+                  )}
+                </View>
+                <View style={styles.linkInfo}>
+                  <Text
+                    style={styles.linkTitle}
+                    numberOfLines={1}
+                    ellipsizeMode="tail">
+                    {link.content}
+                  </Text>
+                  <Text style={styles.linkDate}>조회 {link.updatedAt}</Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.linkButton}
+                  onPress={() => handleToGoLink(link.link)}>
+                  <Text style={styles.linkButtonText}>바로가기</Text>
+                </TouchableOpacity>
               </View>
-              <View style={styles.linkInfo}>
-                <Text
-                  style={styles.linkTitle}
-                  numberOfLines={1}
-                  ellipsizeMode="tail">
-                  {link.content}
-                </Text>
-                <Text style={styles.linkDate}>조회 {link.updatedAt}</Text>
-              </View>
-              <TouchableOpacity style={styles.linkButton}>
-                <Text style={styles.linkButtonText}>바로가기</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
+            ),
+          )}
         </View>
       </View>
     </ScrollView>
