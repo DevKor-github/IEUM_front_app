@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useCallback} from 'react';
+import React, {useState, useCallback} from 'react';
 import {
   View,
   StyleSheet,
@@ -35,78 +35,82 @@ const PlaceListScreen = ({navigation, route}: PlaceListScreenProps) => {
   const [cursorId, setCursorId] = useState<number | null>(0);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  useFocusEffect(() => {
-    async function getDefaultId() {
-      const accessToken = await EncryptedStorage.getItem('accessToken');
-      const res = await API.get('/folders/default', {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      setDefaultId(res.data.id);
-    }
-    getDefaultId();
-  });
+  useFocusEffect(
+    useCallback(() => {
+      async function fetchDefaultId() {
+        try {
+          const accessToken = await EncryptedStorage.getItem('accessToken');
+          const res = await API.get('/folders/default', {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          });
+          setDefaultId(res.data.id);
+        } catch (error) {
+          console.error('Error fetching default folder ID:', error);
+        }
+      }
+      fetchDefaultId();
+    }, []),
+  );
 
-  const getSavedPlaces = useCallback(async () => {
-    if (isLoadingMore || cursorId === null) return;
+  useFocusEffect(
+    useCallback(() => {
+      async function refreshSavedPlaces() {
+        try {
+          const accessToken = await EncryptedStorage.getItem('accessToken');
+          const res = await API.get('/folders/default/places-list', {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+            params: {
+              take: 10,
+              cursorId: 0,
+              addressList: [],
+              categoryList: [],
+            },
+          });
 
-    try {
-      const accessToken = await EncryptedStorage.getItem('accessToken');
-      setIsLoadingMore(true);
+          const data = res.data.items.map((place: any) => ({
+            id: place.id,
+            name: place.name,
+            simplifiedAddress: place.simplifiedAddress,
+            ieumCategory: place.ieumCategory,
+            placeImages: [
+              {
+                url: place.imageUrl,
+                authorName: '',
+                authorUri: '',
+              },
+            ],
+            category: '',
+            address: '',
+            roadAddress: '',
+            phone: '',
+          }));
 
-      const res = await API.get('/folders/default/places-list', {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-        params: {
-          take: 10,
-          cursorId: cursorId,
-          addressList: [],
-          categoryList: [],
-        },
-      });
-
-      const data = res.data.items.map((place: any) => ({
-        id: place.id,
-        name: place.name,
-        simplifiedAddress: place.simplifiedAddress,
-        ieumCategory: place.ieumCategory,
-        placeImages: [
-          {
-            url: place.imageUrl,
-            authorName: '',
-            authorUri: '',
-          },
-        ],
-        category: '',
-        address: '',
-        roadAddress: '',
-        phone: '',
-      }));
-      
-      const meta = res.data.meta;
-
-      setSavedPlaces(prev => [...prev, ...data]);
-      setCursorId(meta.hasNextPage ? meta.nextCursorId : null);
-    } catch (error) {
-      console.error('Error fetching saved places:', error);
-      Alert.alert('Error', 'An error occurred while fetching saved places.');
-    } finally {
-      setIsLoadingMore(false);
-    }
-  }, [cursorId, isLoadingMore]);
-
-  useEffect(() => {
-    getSavedPlaces();
-    return () => {};
-  }, [navigation, getSavedPlaces]);
+          setSavedPlaces(data);
+          setCursorId(
+            res.data.meta.hasNextPage ? res.data.meta.nextCursorId : null,
+          );
+        } catch (error) {
+          console.error('Error refreshing saved places:', error);
+          Alert.alert(
+            'Error',
+            'An error occurred while refreshing saved places.',
+          );
+        }
+      }
+      refreshSavedPlaces();
+    }, []),
+  );
 
   const toggleSelection = (placeId: number) => {
-    setSelectedPlaces(prevSelected =>
-      prevSelected.includes(placeId)
-        ? prevSelected.filter(id => id !== placeId)
-        : [...prevSelected, placeId],
+    setSelectedPlaces(
+      prevSelected =>
+        prevSelected.includes(placeId)
+          ? prevSelected.filter(id => id !== placeId)
+          : [...prevSelected, placeId],
     );
   };
 
@@ -146,7 +150,55 @@ const PlaceListScreen = ({navigation, route}: PlaceListScreenProps) => {
 
   const handleLoadMore = () => {
     if (!isLoadingMore && cursorId !== null) {
-      getSavedPlaces();
+      async function loadMorePlaces() {
+        try {
+          setIsLoadingMore(true);
+          const accessToken = await EncryptedStorage.getItem('accessToken');
+          const res = await API.get('/folders/default/places-list', {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+            params: {
+              take: 10,
+              cursorId: cursorId,
+              addressList: [],
+              categoryList: [],
+            },
+          });
+
+          const data = res.data.items.map((place: any) => ({
+            id: place.id,
+            name: place.name,
+            simplifiedAddress: place.simplifiedAddress,
+            ieumCategory: place.ieumCategory,
+            placeImages: [
+              {
+                url: place.imageUrl,
+                authorName: '',
+                authorUri: '',
+              },
+            ],
+            category: '',
+            address: '',
+            roadAddress: '',
+            phone: '',
+          }));
+
+          setSavedPlaces(prev => [...prev, ...data]);
+          setCursorId(
+            res.data.meta.hasNextPage ? res.data.meta.nextCursorId : null,
+          );
+        } catch (error) {
+          console.error('Error loading more saved places:', error);
+          Alert.alert(
+            'Error',
+            'An error occurred while loading more saved places.',
+          );
+        } finally {
+          setIsLoadingMore(false);
+        }
+      }
+      loadMorePlaces();
     }
   };
 
@@ -203,13 +255,16 @@ const PlaceListScreen = ({navigation, route}: PlaceListScreenProps) => {
 
       <PlaceList
         placeList={savedPlaces}
-        onPress={(id) =>
+        onPress={id =>
           isSelecting
             ? toggleSelection(id)
-            : navigation.navigate('PlaceDetail', { placeId: id })
+            : navigation.navigate('PlaceDetail', {placeId: id})
         }
         loading={isLoadingMore}
         load={handleLoadMore}
+        isSelecting={isSelecting}
+        selectedPlaces={selectedPlaces}
+        toggleSelection={toggleSelection}
       />
     </SafeAreaView>
   );
