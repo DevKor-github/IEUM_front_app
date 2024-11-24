@@ -14,7 +14,6 @@ import LinearGradient from 'react-native-linear-gradient';
 import {HomeStackParamList} from '../../types';
 import {API} from '../api/base';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import EncryptedStorage from 'react-native-encrypted-storage';
 import CloseButton from '../assets/close-button.svg';
 import SaveToFolder from '../assets/save-to-folder.svg';
 import SavedToFolder from '../assets/saved-to-folder.svg';
@@ -84,26 +83,55 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
     }
   }, [isBottomSheetVisible]);
 
+  useEffect(() => {
+    if (route.params?.disableAnimation) {
+      navigation.setOptions({
+        animationEnabled: false,
+      });
+    }
+  }, [route.params?.disableAnimation]);
+
   const handleSpotUnsave = async () => {
     try {
       await API.delete(`/folders/${defaultId}/folder-places`, {
-        data: {
-          placeIds: selectedPlaces,
-        },
+        data: {placeIds: selectedPlaces},
       });
 
-      setIsSpotSaved(false);
       setPlaces(prevPlaces =>
-        prevPlaces.map(place =>
+        prevPlaces.map((place: Place) =>
           selectedPlaces.includes(place.placeId)
             ? {...place, isSaved: false}
             : place,
         ),
       );
 
-      setTimeout(() => {
-        setIsBottomSheetVisible(false);
-      }, 300);
+      setSavedPlaces(prevSavedPlaces =>
+        prevSavedPlaces.map((folder: Folder) => {
+          if (folder.id === defaultId) {
+            const unsavedCount = selectedPlaces.filter(placeId =>
+              places.some(place => place.placeId === placeId && place.isSaved),
+            ).length;
+
+            const updatedPlaceCnt = folder.placeCnt - unsavedCount;
+            return {
+              ...folder,
+              placeCnt: Math.max(updatedPlaceCnt, 0),
+              placeExistence: updatedPlaceCnt > 0,
+            };
+          }
+          return folder;
+        }),
+      );
+
+      setSelectedPlaces([]);
+      setIsSpotSaved(false);
+      setIsBottomSheetVisible(false);
+      navigation.replace('SpotSave', {
+        collectionId,
+        collectionContent,
+        collectionType,
+        disableAnimation: true,
+      });
     } catch (error) {
       console.error('Error unsaving spot:', error);
       Alert.alert('Error', 'An error occurred while unsaving the place.');
@@ -161,7 +189,17 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
         const data = res.data.items;
         const meta = res.data.meta;
 
-        setPlaces(prevPlaces => [...prevPlaces, ...data]);
+        const savedRes = await API.get(`/folders/${defaultId}/places-list`);
+        const savedPlaceIds = savedRes.data.items.map(
+          (item: any) => item.placeId,
+        );
+
+        const updatedPlaces = res.data.items.map((place: Place) => ({
+          ...place,
+          isSaved: savedPlaceIds.includes(place.placeId),
+        }));
+
+        setPlaces(prevPlaces => [...prevPlaces, ...updatedPlaces]);
 
         setPlacesCursorId(meta.hasNextPage ? meta.nextCursorId : null);
       } catch (error) {
@@ -267,6 +305,7 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
         return;
       }
       const requestBody = {
+        collectionId: collectionId,
         placeIds: validPlaceIds,
       };
       await API.post(`/folders/${folderId}/folder-places`, requestBody);
@@ -507,6 +546,7 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
         </LinearGradient>
         <FlatList
           data={places}
+          extraData={{places, savedPlaces}}
           contentContainerStyle={styles.flatListContent}
           keyExtractor={item => item.placeId.toString()}
           renderItem={renderPlaceItem}
