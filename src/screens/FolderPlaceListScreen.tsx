@@ -9,7 +9,7 @@ import {
   Alert,
   Modal,
   Share,
-  FlatList
+  FlatList,
 } from 'react-native';
 import {StackScreenProps} from '@react-navigation/stack';
 import BackButton from '../assets/back-button.svg';
@@ -293,7 +293,7 @@ const FolderPlaceListScreen = ({
           borderBottomWidth: 2.2,
           paddingBottom: 13,
           marginTop: 40,
-          marginBottom: 22
+          marginBottom: 22,
         }}>
         <View>
           <Text style={{fontSize: 20, fontWeight: '700', marginBottom: 4}}>
@@ -325,6 +325,9 @@ const FolderPlaceListScreen = ({
 
       <PlaceList
         placeList={savedPlaces}
+        isSelecting={isSelecting}
+        selectedPlaces={selectedPlaces}
+        toggleSelection={toggleSelection}
         onPress={placeId => {
           if (isSelecting) {
             toggleSelection(placeId);
@@ -659,6 +662,5 @@ const styles = StyleSheet.create({
     color: '#007AFF',
   },
 });
-
 
 export default FolderPlaceListScreen;
