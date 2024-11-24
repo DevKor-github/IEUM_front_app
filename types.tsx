@@ -32,6 +32,7 @@ export type HomeStackParamList = {
     collectionId: number;
     collectionContent: string;
     collectionType: string;
+    disableAnimation: boolean;
   };
   FolderList: {newFolder: string | null};
   NewFolder: undefined;
