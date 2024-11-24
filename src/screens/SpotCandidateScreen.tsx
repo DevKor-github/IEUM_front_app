@@ -121,11 +121,13 @@ const SpotCandidateScreen = ({navigation}: SpotCandidateScreenProps) => {
     collectionId: number,
     collectionContent: string,
     collectionType: string,
+    disableAnimation: boolean,
   ) => {
     navigation.navigate('SpotSave', {
       collectionId,
       collectionContent,
       collectionType,
+      disableAnimation
     });
   };
 
@@ -163,7 +165,7 @@ const SpotCandidateScreen = ({navigation}: SpotCandidateScreenProps) => {
               style={styles.card}
               key={link.id}
               onPress={() =>
-                handlePress(link.id, link.content, link.collectionType)
+                handlePress(link.id, link.content, link.collectionType, false)
               }>
               <View style={styles.cardHeader}>
                 {link.collectionType === 'INSTAGRAM' ? (
@@ -220,7 +222,7 @@ const SpotCandidateScreen = ({navigation}: SpotCandidateScreenProps) => {
               style={[styles.card, styles.viewedCard]}
               key={link.id}
               onPress={() =>
-                handlePress(link.id, link.content, link.collectionType)
+                handlePress(link.id, link.content, link.collectionType, false)
               }>
               <View style={styles.cardHeader}>
                 {link.collectionType === 'INSTAGRAM' ? (
