@@ -9,18 +9,27 @@ import {
 import {IPlace} from '../recoil/place/atom';
 import React from 'react';
 import ImageContainer from './ImageContainer';
+import CheckedSpot from '../assets/checked-spot.svg';
+import EmptySpot from '../assets/empty-circle.svg';
 
 export interface IPlaceList {
   placeList: IPlace[];
   onPress: (id: number) => void;
   loading: boolean;
   load: () => void;
+  isSelecting: boolean;
+  selectedPlaces: number[];
+  toggleSelection: (id: number) => void;
 }
 
 const PlaceList = (props: IPlaceList) => {
   const renderItem = ({item}: {item: IPlace}) => (
     <TouchableOpacity
-      onPress={() => props.onPress(item.id)}
+      onPress={() =>
+        props.isSelecting
+          ? props.toggleSelection(item.id)
+          : props.onPress(item.id)
+      }
       style={styles.card}>
       <View>
         <View style={styles.image}>
@@ -31,6 +40,15 @@ const PlaceList = (props: IPlaceList) => {
             height={220}
             borderRadius={6}
           />
+          {props.isSelecting && (
+            <View style={styles.selectionIcon}>
+              {props.selectedPlaces.includes(item.id) ? (
+                <CheckedSpot width={29} height={29} />
+              ) : (
+                <EmptySpot width={29} height={29} />
+              )}
+            </View>
+          )}
         </View>
         <Text style={styles.title}>{item.name}</Text>
         <Text style={styles.location}>{`${item.simplifiedAddress} ${
@@ -53,13 +71,12 @@ const PlaceList = (props: IPlaceList) => {
       data={props.placeList}
       renderItem={renderItem}
       keyExtractor={item => 'place_' + item.id.toString() + item.name}
-      // key={mode === 'SAVED_PLACED' ? 'two-columns' : 'one-column'} // key 값 변경으로 재렌더링 유도
       contentContainerStyle={styles.bottomSheetScrollViewContent}
-      numColumns={2} // 2열 그리드 형식으로 표시
-      columnWrapperStyle={styles.gridContainer} // 열 사이 간격 조절
-      onEndReached={props.load} // 리스트 끝에 도달했을 때 추가 데이터 요청
-      onEndReachedThreshold={0.5} // 끝에서 50% 남았을 때 호출
-      ListFooterComponent={renderFooter} // 로딩 중일 때 하단에 로딩 스피너 표시
+      numColumns={2}
+      columnWrapperStyle={styles.gridContainer}
+      onEndReached={props.load}
+      onEndReachedThreshold={0.5}
+      ListFooterComponent={renderFooter}
     />
   );
 };
@@ -80,8 +97,14 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   image: {
-    marginBottom: 8, // todo 너무 좁지 않은가?
+    marginBottom: 8,
     width: '100%',
+    position: 'relative',
+  },
+  selectionIcon: {
+    position: 'absolute',
+    top: 14,
+    right: 11,
   },
   title: {
     fontSize: 15,
