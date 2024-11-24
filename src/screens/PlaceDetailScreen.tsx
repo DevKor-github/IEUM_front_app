@@ -1,7 +1,11 @@
 import React, {useEffect, useState} from 'react';
 import {
   Alert,
+  Dimensions,
+  FlatList,
   Linking,
+  Modal,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -25,21 +29,60 @@ import {Categories} from '../recoil/category/atom';
 import Clipboard from '@react-native-clipboard/clipboard';
 import HashTags from '../component/HashTags';
 import ImageContainer from '../component/ImageContainer';
+import SpotUnSaveIcon from '../assets/bookmark-non-selected-icon.svg';
+import SpotSaveIcon from '../assets/bookmark-selected-icon.svg';
+import SavedPlaceNum from '../assets/saved-place-num.svg';
+import CheckedSpot from '../assets/checked-spot.svg';
+import PlusIcon from '../assets/place-plus-icon.svg';
+import {useFocusEffect} from '@react-navigation/native';
 
 export type PlaceDetailScreenProps = StackScreenProps<
   MapStackParamList,
   'PlaceDetail'
 >;
 
+interface Folder {
+  id: number;
+  name: string;
+  type: number;
+  placeCnt: number;
+  placeExistence: boolean;
+}
+
+const dWidth = Dimensions.get('window').width;
+
 const PlaceDetailScreen = ({navigation, route}: PlaceDetailScreenProps) => {
   const [placeDetails, setPlaceDetails] = useState<IPlace>();
   const [placeConveniences, setPlaceConveniences] = useState<
     PlaceConvenience[]
   >([]);
+  const [isSaved, setIsSaved] = useState(true);
+  const [isBottomSheetVisible, setIsBottomSheetVisible] = useState(false);
+  const [folders, setFolders] = useState<any[]>([]);
+  const [defaultId, setDefaultId] = useState(0);
+  const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null);
+  const [isSpotSaved, setIsSpotSaved] = useState(true);
+  const [existingFolders, setExistingFolders] = useState<number[]>([]);
+
+  useFocusEffect(() => {
+    async function getDefaultId() {
+      const res = await API.get('/folders/default');
+      setDefaultId(res.data.id);
+    }
+    getDefaultId();
+  });
 
   useEffect(() => {
     getPlaceDetail();
   }, []);
+
+  useEffect(() => {
+    async function getFolder() {
+      const res = await API.get('/folders');
+      setFolders(res.data.items);
+    }
+    getFolder();
+  }, [navigation]);
 
   const getPlaceDetail = async () => {
     const {placeId} = route.params;
@@ -52,13 +95,11 @@ const PlaceDetailScreen = ({navigation, route}: PlaceDetailScreenProps) => {
       simplifiedAddress: data.simplifiedAddress,
       roadAddress: data.roadAddress,
       phone: data.phone,
-      // category: data.,
       category: Categories.FOOD, //todo
       latitude: data.latitude,
       longitude: data.longitude,
       categoryTags: data.primaryCategory,
       hashTags: data.customTags,
-      // region?: data., // todo
       openingHours: data.openingHours,
       googleMapsUri: data.googleMapsUri,
       linkedCollections: data.linkedCollections,
@@ -88,6 +129,121 @@ const PlaceDetailScreen = ({navigation, route}: PlaceDetailScreenProps) => {
     setPlaceDetails(tempPlaceInfo);
   };
 
+  const fetchFoldersContainingPlace = async (placeId: number) => {
+    try {
+      const res = await API.get(`/places/${placeId}/folders`);
+
+      const folderList = res.data.items;
+      const folderIdsWithPlace = folderList
+        .filter((folder: Folder) => folder.placeExistence)
+        .map((folder: Folder) => folder.id);
+
+      setExistingFolders(folderIdsWithPlace);
+    } catch (error) {
+      console.error('Error fetching folders containing place:', error);
+    }
+  };
+
+  useEffect(() => {
+    const {placeId} = route.params;
+    if (isBottomSheetVisible) {
+      fetchFoldersContainingPlace(placeId);
+    }
+  }, [isBottomSheetVisible]);
+
+  const handleSpotUnsave = async () => {
+    const {placeId} = route.params;
+    try {
+      await API.delete(`/folders/${defaultId}/folder-places`, {
+        data: {placeIds: [placeId]},
+      });
+      setIsSpotSaved(false);
+      setIsBottomSheetVisible(false);
+    } catch (error) {
+      console.error('Error unsaving spot:', error);
+      Alert.alert('Error', 'An error occurred while unsaving the place.');
+    }
+  };
+
+  const saveToSelectedFolder = async (folderId: number) => {
+    try {
+      const {placeId} = route.params;
+      const requestBody = {
+        placeIds: [placeId],
+      };
+      await API.post(`/folders/${folderId}/folder-places`, requestBody);
+      setIsBottomSheetVisible(false);
+      setSelectedFolderId(null);
+    } catch (error) {
+      console.error('Error saving to folder:', error);
+      Alert.alert('Error', 'An error occurred while saving the place.');
+    }
+  };
+
+  const removePlaceFromFolder = async (folderId: number) => {
+    try {
+      const {placeId} = route.params;
+      await API.delete(`/folders/${folderId}/folder-places`, {
+        data: {
+          placeIds: [placeId],
+        },
+      });
+
+      setExistingFolders(prevFolders =>
+        prevFolders.filter(id => id !== folderId),
+      );
+    } catch (error) {
+      console.error('Error removing place from folder:', error);
+      Alert.alert(
+        'Error',
+        'An error occurred while removing the place from the folder.',
+      );
+    }
+    setIsBottomSheetVisible(false);
+  };
+
+  const renderFolderItem = ({item}: {item: Folder}) => {
+    const isFolderContainingPlace = existingFolders.includes(item.id);
+    console.log('Rendering folder item:', item);
+
+    return (
+      <Pressable
+        style={styles.folderItem}
+        onPress={() => {
+          setSelectedFolderId(item.id);
+          setTimeout(() => {
+            setSelectedFolderId(null);
+          }, 500);
+          setIsBottomSheetVisible(false);
+          saveToSelectedFolder(item.id);
+        }}>
+        <View style={styles.folderInfoContainer}>
+          <View style={styles.folderIcon} />
+          <View>
+            <Text style={styles.folderName}>{item.name}</Text>
+            <View style={styles.folderDetailContainer}>
+              <SavedPlaceNum />
+              <Text style={styles.folderPlaceCnt}>
+                저장한 장소 · {item.placeCnt}곳
+              </Text>
+            </View>
+          </View>
+          <Pressable
+            onPress={() => {
+              if (isFolderContainingPlace) {
+                removePlaceFromFolder(item.id);
+              } else {
+                saveToSelectedFolder(item.id);
+              }
+            }}
+            style={{marginLeft: 'auto'}}>
+            {isFolderContainingPlace ? <CheckedSpot /> : <PlusIcon />}
+          </Pressable>
+        </View>
+      </Pressable>
+    );
+  };
+
   const renderTitleSection = () => {
     return (
       <View style={styles.titleContainer}>
@@ -103,9 +259,12 @@ const PlaceDetailScreen = ({navigation, route}: PlaceDetailScreenProps) => {
             }`}</Text>
           </View>
 
-          {/*todo 로직 추가*/}
-          <TouchableOpacity style={styles.bookmarkIcon}>
-            <BookmarkIcon />
+          <TouchableOpacity
+            style={styles.bookmarkIcon}
+            onPress={() => {
+              setIsBottomSheetVisible(true);
+            }}>
+            {isSpotSaved ? <BookmarkIcon /> : <SpotUnSaveIcon />}
           </TouchableOpacity>
         </View>
         <HashTags hashtags={placeDetails?.hashTags} />
@@ -182,7 +341,6 @@ const PlaceDetailScreen = ({navigation, route}: PlaceDetailScreenProps) => {
 
   return (
     <ScrollView style={styles.container}>
-      {/* Header 이미지 */}
       <ImageContainer
         imageUrl={placeDetails?.placeImages[0]?.url || ''}
         defaultImageUrl={require('../assets/unloaded-image.png')}
@@ -281,6 +439,106 @@ const PlaceDetailScreen = ({navigation, route}: PlaceDetailScreenProps) => {
             </View>
           ))}
         </View>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={isBottomSheetVisible}
+          onRequestClose={() => {
+            setIsBottomSheetVisible(false);
+            setSelectedFolderId(null);
+          }}>
+          <Pressable
+            style={styles.modalOverlay}
+            onPress={() => {
+              setIsBottomSheetVisible(false);
+              setSelectedFolderId(null);
+            }}>
+            <View style={styles.bottomSheet}>
+              <View style={styles.bottomSheetContent}>
+                <View
+                  style={{
+                    marginTop: 15,
+                    marginHorizontal: 5,
+                    marginBottom: 25,
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-end',
+                  }}>
+                  <Text style={styles.bottomSheetTitle}>내 보관함</Text>
+                  <Pressable>
+                    <Text
+                      style={{
+                        fontSize: 13,
+                        fontWeight: '600',
+                        color: '#008AFF',
+                      }}>
+                      새 보관함
+                    </Text>
+                  </Pressable>
+                </View>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    marginHorizontal: 5,
+                  }}>
+                  <View
+                    style={{
+                      width: 50,
+                      height: 50,
+                      backgroundColor: 'grey',
+                      borderRadius: 10,
+                      marginRight: 10,
+                    }}
+                  />
+                  <View>
+                    <Text style={{fontSize: 16, fontWeight: '600'}}>
+                      Default
+                    </Text>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        gap: 5,
+                        alignItems: 'center',
+                      }}>
+                      <SavedPlaceNum />
+                      <Text
+                        style={{
+                          fontSize: 14,
+                          fontWeight: '400',
+                          color: '#A4A4A4',
+                        }}>
+                        저장한 장소 · 곳
+                      </Text>
+                    </View>
+                  </View>
+                  <Pressable
+                    onPress={handleSpotUnsave}
+                    style={{marginLeft: 'auto'}}>
+                    {isSpotSaved ? <BookmarkIcon /> : <SpotUnSaveIcon />}
+                  </Pressable>
+                </View>
+
+                <View
+                  style={{
+                    backgroundColor: '#EFEFEF',
+                    height: 1,
+                    width: 320,
+                    marginTop: 20,
+                    marginBottom: 25,
+                    alignSelf: 'center',
+                  }}
+                />
+
+                <FlatList
+                  data={folders}
+                  keyExtractor={item => item.id.toString()}
+                  renderItem={renderFolderItem}
+                />
+              </View>
+            </View>
+          </Pressable>
+        </Modal>
       </View>
     </ScrollView>
   );
@@ -419,6 +677,76 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '400',
     color: '#A4A4A4',
+  },
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(18, 18, 18, 0.5)',
+  },
+  bottomSheet: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  bottomSheetTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  bottomSheetContent: {
+    height: '45%',
+    backgroundColor: '#FFF',
+    borderTopLeftRadius: 15,
+    borderTopRightRadius: 15,
+    paddingHorizontal: 24,
+    paddingVertical: 18,
+  },
+  folderInfoContainer: {
+    flexDirection: 'row',
+    width: dWidth - 58,
+    alignItems: 'center',
+    marginHorizontal: 5,
+  },
+  folderItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EFEFEF',
+  },
+  folderIcon: {
+    width: 50,
+    height: 50,
+    backgroundColor: 'grey',
+    borderRadius: 10,
+    marginRight: 10,
+  },
+  folderName: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  folderDetailContainer: {
+    flexDirection: 'row',
+    gap: 5,
+    alignItems: 'center',
+  },
+  folderPlaceCnt: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: '#A4A4A4',
+  },
+  closeButton: {
+    marginTop: 16,
+    alignItems: 'center',
+    padding: 12,
+    backgroundColor: '#EFEFEF',
+    borderRadius: 8,
+  },
+  closeButtonText: {
+    fontSize: 14,
+    color: '#333',
   },
 });
 
