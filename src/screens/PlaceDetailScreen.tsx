@@ -204,7 +204,6 @@ const PlaceDetailScreen = ({navigation, route}: PlaceDetailScreenProps) => {
 
   const renderFolderItem = ({item}: {item: Folder}) => {
     const isFolderContainingPlace = existingFolders.includes(item.id);
-    console.log('Rendering folder item:', item);
 
     return (
       <Pressable

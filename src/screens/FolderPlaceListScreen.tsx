@@ -59,13 +59,9 @@ const FolderPlaceListScreen = ({
     if (isLoadingMore || cursorId === null) return;
 
     try {
-      const accessToken = await EncryptedStorage.getItem('accessToken');
       setIsLoadingMore(true);
 
       const res = await API.get(`/folders/${folderId}/places-list`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
         params: {
           take: 10,
           cursorId: cursorId || 0,
@@ -128,11 +124,7 @@ const FolderPlaceListScreen = ({
           onPress: async () => {
             try {
               const requestBody = {placeIds: selectedPlaces};
-              const accessToken = await EncryptedStorage.getItem('accessToken');
               await API.delete(`/folders/${folderId}/folder-places`, {
-                headers: {
-                  Authorization: `Bearer ${accessToken}`,
-                },
                 data: requestBody,
               });
               navigation.goBack();
@@ -165,8 +157,6 @@ const FolderPlaceListScreen = ({
 
   const saveToSelectedFolder = async (folderId: number) => {
     try {
-      const accessToken = await EncryptedStorage.getItem('accessToken');
-
       if (selectedPlaces.length === 0) {
         Alert.alert('Error', 'No places selected or invalid place ID.');
         return;
@@ -181,11 +171,7 @@ const FolderPlaceListScreen = ({
       const requestBody = {
         placeIds: validPlaceIds,
       };
-      await API.post(`/folders/${folderId}/folder-places`, requestBody, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      await API.post(`/folders/${folderId}/folder-places`, requestBody);
       setIsBottomSheetVisible(false);
       setSelectedPlaces([]);
       setSelectedFolderId(null);
@@ -198,12 +184,7 @@ const FolderPlaceListScreen = ({
 
   const fetchFolders = useCallback(async () => {
     try {
-      const accessToken = await EncryptedStorage.getItem('accessToken');
-      const res = await API.get('/folders', {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await API.get('/folders');
       setFolders(res.data.items);
     } catch (error) {
       console.error('Error fetching folders:', error);
@@ -439,12 +420,8 @@ const FolderPlaceListScreen = ({
                       style: 'destructive',
                       onPress: async () => {
                         try {
-                          const accessToken = await EncryptedStorage.getItem(
-                            'accessToken',
-                          );
                           await API.delete(`/folders/${folderId}`, {
                             headers: {
-                              Authorization: `Bearer ${accessToken}`,
                               'Content-Type': 'application/json',
                             },
                           });

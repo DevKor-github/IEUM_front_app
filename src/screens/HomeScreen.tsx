@@ -84,11 +84,9 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     if (isLoadingMore || !hasMoreData || cursorId === null) return;
 
     try {
-      const accessToken = await EncryptedStorage.getItem('accessToken');
       setIsLoadingMore(true);
 
       const res = await API.get('/folders/default/places-list', {
-        headers: {Authorization: `Bearer ${accessToken}`},
         params: {
           take: 10,
           cursorId: cursorId || 0,
@@ -115,22 +113,14 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
   const fetchData = useCallback(async () => {
     try {
-      const accessToken = await EncryptedStorage.getItem('accessToken');
-
       const [profileRes, folderRes, unviewedLinksRes, viewedLinksRes] =
         await Promise.all([
-          API.get('/users/me', {
-            headers: {Authorization: `Bearer ${accessToken}`},
-          }),
-          API.get('/folders', {
-            headers: {Authorization: `Bearer ${accessToken}`},
-          }),
+          API.get('/users/me'),
+          API.get('/folders'),
           API.get('/collections/unviewed', {
-            headers: {Authorization: `Bearer ${accessToken}`},
             params: {cursorId: cursorId},
           }),
           API.get('/collections/viewed', {
-            headers: {Authorization: `Bearer ${accessToken}`},
             params: {cursorId: cursorId},
           }),
         ]);

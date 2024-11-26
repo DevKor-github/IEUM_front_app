@@ -46,12 +46,7 @@ const FolderListScreen = ({navigation, route}: FolderListScreenProps) => {
 
   const fetchFolders = useCallback(async () => {
     try {
-      const accessToken = await EncryptedStorage.getItem('accessToken');
-      const res = await API.get('/folders', {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await API.get('/folders');
       setFolders(res.data.items);
     } catch (error) {
       console.error('Error fetching folders:', error);
@@ -84,13 +79,10 @@ const FolderListScreen = ({navigation, route}: FolderListScreenProps) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              const accessToken = await EncryptedStorage.getItem('accessToken');
-
               for (const folderId of selectedFolders) {
                 try {
                   await API.delete(`/folders/${folderId}`, {
                     headers: {
-                      Authorization: `Bearer ${accessToken}`,
                       'Content-Type': 'application/json',
                     },
                   });
