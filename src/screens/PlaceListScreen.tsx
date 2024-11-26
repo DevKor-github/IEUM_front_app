@@ -39,12 +39,7 @@ const PlaceListScreen = ({navigation, route}: PlaceListScreenProps) => {
     useCallback(() => {
       async function fetchDefaultId() {
         try {
-          const accessToken = await EncryptedStorage.getItem('accessToken');
-          const res = await API.get('/folders/default', {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          });
+          const res = await API.get('/folders/default');
           setDefaultId(res.data.id);
         } catch (error) {
           console.error('Error fetching default folder ID:', error);
@@ -58,11 +53,7 @@ const PlaceListScreen = ({navigation, route}: PlaceListScreenProps) => {
     useCallback(() => {
       async function refreshSavedPlaces() {
         try {
-          const accessToken = await EncryptedStorage.getItem('accessToken');
           const res = await API.get('/folders/default/places-list', {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
             params: {
               take: 10,
               cursorId: 0,
@@ -126,11 +117,7 @@ const PlaceListScreen = ({navigation, route}: PlaceListScreenProps) => {
           onPress: async () => {
             const requestBody = {placeIds: selectedPlaces};
             try {
-              const accessToken = await EncryptedStorage.getItem('accessToken');
               await API.delete(`/folders/${defaultId}/folder-places`, {
-                headers: {
-                  Authorization: `Bearer ${accessToken}`,
-                },
                 data: requestBody,
               });
               setSavedPlaces(prevPlaces =>
@@ -153,11 +140,7 @@ const PlaceListScreen = ({navigation, route}: PlaceListScreenProps) => {
       async function loadMorePlaces() {
         try {
           setIsLoadingMore(true);
-          const accessToken = await EncryptedStorage.getItem('accessToken');
           const res = await API.get('/folders/default/places-list', {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
             params: {
               take: 10,
               cursorId: cursorId,

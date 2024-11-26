@@ -46,14 +46,9 @@ const SpotCandidateScreen = ({navigation}: SpotCandidateScreenProps) => {
 
       const fetchLinks = async () => {
         try {
-          const accessToken = await EncryptedStorage.getItem('accessToken');
-          if (!accessToken) throw new Error('No access token found');
-
-          // Fetch unviewed links
           const unviewedResponse = await API.get<{
             response: {data: LinkData[]};
           }>('/collections/unviewed', {
-            headers: {Authorization: `Bearer ${accessToken}`},
             params: {cursorId: 0},
           });
 
@@ -61,11 +56,9 @@ const SpotCandidateScreen = ({navigation}: SpotCandidateScreenProps) => {
             setUnviewedLinks(unviewedResponse.data.items);
           }
 
-          // Fetch viewed links
           const viewedResponse = await API.get<{response: {data: LinkData[]}}>(
             '/collections/viewed',
             {
-              headers: {Authorization: `Bearer ${accessToken}`},
               params: {cursorId: 0},
             },
           );
@@ -74,7 +67,6 @@ const SpotCandidateScreen = ({navigation}: SpotCandidateScreenProps) => {
             setViewedLinks(viewedResponse.data.items);
           }
 
-          // Determine the most recent createdAt date
           const allLinks = [
             ...unviewedResponse.data.items,
             ...viewedResponse.data.items,
