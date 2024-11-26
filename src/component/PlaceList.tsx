@@ -17,16 +17,16 @@ export interface IPlaceList {
   onPress: (id: number) => void;
   loading: boolean;
   load: () => void;
-  isSelecting: boolean;
-  selectedPlaces: number[];
-  toggleSelection: (id: number) => void;
+  isSelecting?: boolean;
+  selectedPlaces?: number[];
+  toggleSelection?: (id: number) => void;
 }
 
 const PlaceList = (props: IPlaceList) => {
   const renderItem = ({item}: {item: IPlace}) => (
     <TouchableOpacity
       onPress={() =>
-        props.isSelecting
+        props.isSelecting && props.toggleSelection
           ? props.toggleSelection(item.id)
           : props.onPress(item.id)
       }
@@ -42,7 +42,8 @@ const PlaceList = (props: IPlaceList) => {
           />
           {props.isSelecting && (
             <View style={styles.selectionIcon}>
-              {props.selectedPlaces.includes(item.id) ? (
+              {props.selectedPlaces &&
+              props.selectedPlaces.includes(item.id) ? (
                 <CheckedSpot width={29} height={29} />
               ) : (
                 <EmptySpot width={29} height={29} />
