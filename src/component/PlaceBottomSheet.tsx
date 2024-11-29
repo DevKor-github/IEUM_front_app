@@ -483,12 +483,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 10,
     width: 1000,
+    height: 70,
   },
   itemImage: {
     marginRight: 10,
   },
   itemTextContainer: {
-    flex: 1,
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'flex-end',
   },
   itemTitle: {
     fontSize: 16,
@@ -498,6 +502,7 @@ const styles = StyleSheet.create({
   itemSubtitleContainer: {
     display: 'flex',
     flexDirection: 'row',
+    alignItems: 'center',
   },
   itemSubtitle: {
     fontSize: 14,
