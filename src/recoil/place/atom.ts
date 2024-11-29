@@ -27,6 +27,7 @@ export interface ILinkCollection {
   link: string;
   collectionType: string;
   content: string;
+  isSaved?: boolean;
   isViewed: boolean;
   updatedAt: string;
 }

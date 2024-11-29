@@ -155,7 +155,7 @@ const FolderListScreen = ({navigation, route}: FolderListScreenProps) => {
               key={folder.id}
               style={[
                 styles.folderItem,
-                {marginRight: index % 2 === 0 ? 8 : 0},
+                // {marginRight: index % 2 === 0 ? 8 : 0},
               ]}
               onPress={() => {
                 if (isSelecting) {
@@ -300,12 +300,12 @@ const styles = StyleSheet.create({
   folderGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
+    justifyContent: 'center',
+    columnGap: 5,
   },
   folderItem: {
-    width: (dWidth - 70) / 2,
-    marginBottom: 20,
+    width: (dWidth - 50) / 2, // todo 사이즈 확인 필요
+    marginBottom: 10,
     position: 'relative',
   },
   folderImage: {
@@ -334,7 +334,8 @@ const styles = StyleSheet.create({
     right: 10,
   },
   addFolder: {
-    width: (dWidth - 70) / 2,
+    // width: (dWidth - 50) / 2,
+    width: (dWidth - 50) / 2,
     height: 180,
     backgroundColor: '#FFF',
     borderColor: '#EFEFEF',
