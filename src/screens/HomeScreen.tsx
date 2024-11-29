@@ -24,6 +24,9 @@ import EncryptedStorage from 'react-native-encrypted-storage';
 import {useFocusEffect} from '@react-navigation/native';
 import {AxiosError} from 'axios';
 import ImageContainer from '../component/ImageContainer';
+import PlaceList from '../component/PlaceList';
+import {IPlace} from '../recoil/place/atom';
+import {mapServerCategoryToEnum} from '../recoil/category/atom';
 
 export type HomeScreenProps = StackScreenProps<HomeStackParamList, 'Home'>;
 
@@ -202,25 +205,41 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   };
 
   const renderPlaces = () => {
-    const placeItems = savedPlaces.slice(0, 4).map((place, index) => (
-      <View
-        key={place.id}
-        style={[styles.placeItem, {marginRight: index % 2 === 0 ? 8 : 0}]}>
-        <ImageContainer
-          imageUrl={place.imageUrl}
-          defaultImageUrl={require('../assets/unloaded-image-v2.png')}
-          width="100%"
-          height={220}
-          borderRadius={6}
-        />
-        <Text style={styles.placeName}>{place.name}</Text>
-        <Text style={styles.placeInfo}>
-          {place.simplifiedAddress} | {place.ieumCategory}
-        </Text>
-      </View>
-    ));
-
-    return <View style={styles.placesContainer}>{placeItems}</View>;
+    const placeItems = savedPlaces.slice(0, 4).map((item): IPlace => {
+      return {
+        id: item.id,
+        name: item.name,
+        address: '',
+        simplifiedAddress: item.simplifiedAddress,
+        roadAddress: '',
+        phone: '',
+        category: mapServerCategoryToEnum(item.ieumCategory),
+        latitude: 0,
+        longitude: 0,
+        categoryTags: '',
+        hashTags: [],
+        // region?: Regions,
+        openingHours: [],
+        googleMapsUri: '',
+        linkedCollections: [],
+        placeImages: [
+          {
+            url: item.imageUrl,
+            authorName: '',
+            authorUri: '',
+          },
+        ],
+      };
+    });
+    return (
+      <PlaceList
+        placeList={placeItems}
+        onPress={() => navigation.navigate('PlaceList')}
+        loading={false}
+        load={() => {}}
+        containerStyle={{paddingHorizontal: 0}}
+      />
+    );
   };
 
   return (
@@ -451,10 +470,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#D9D9D9',
     borderRadius: 6,
   },
+  image: {
+    marginBottom: 8,
+    width: '100%',
+    position: 'relative',
+  },
   placeName: {
-    marginTop: 9,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
+    marginBottom: 4,
   },
   placeInfo: {
     fontSize: 12.5,
