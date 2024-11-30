@@ -24,6 +24,7 @@ import SelectIcon from '../assets/select-icon.svg';
 import SavedPlaceNum from '../assets/saved-place-num.svg';
 import SpotSaveIcon from '../assets/bookmark-selected-icon.svg';
 import SpotUnSaveIcon from '../assets/bookmark-non-selected-icon.svg';
+import NoSpotIcon from '../assets/no-place-icon.svg';
 import {useFocusEffect} from '@react-navigation/native';
 
 export type SpotSaveScreenProps = StackScreenProps<
@@ -316,6 +317,12 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
             : place,
         ),
       );
+      navigation.replace('SpotSave', {
+        collectionId,
+        collectionContent,
+        collectionType,
+        disableAnimation: true,
+      });
       setIsBottomSheetVisible(false);
       setSelectedPlaces([]);
       setSelectedFolderId(null);
@@ -544,41 +551,51 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
             저장된 장소는 {nickname} 님의 지도에 추가됩니다!
           </Text>
         </LinearGradient>
-        <FlatList
-          data={places}
-          extraData={{places, savedPlaces}}
-          contentContainerStyle={styles.flatListContent}
-          keyExtractor={item => item.placeId.toString()}
-          renderItem={renderPlaceItem}
-          ListHeaderComponent={
-            <View style={styles.actionHeader}>
-              <Pressable
-                onPress={() => {
-                  setIsSelecting(!isSelecting);
-                  setSelectedPlaces([]);
-                }}
-                style={styles.selectButton}>
-                {!isSelecting ? <SelectIcon /> : <></>}
-                <Text style={styles.actionText}>
-                  {isSelecting ? '취소' : '선택'}
-                </Text>
-              </Pressable>
-              {isSelecting && (
+        {places.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <NoSpotIcon />
+            <Text style={styles.emptyTitle}>정보를 불러올 수 없습니다.</Text>
+            <Text style={styles.emptyDescription}>
+              장소가 존재하지 않거나 연결에 문제가 발생했습니다.
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={places}
+            extraData={{ places, savedPlaces }}
+            contentContainerStyle={styles.flatListContent}
+            keyExtractor={item => item.placeId.toString()}
+            renderItem={renderPlaceItem}
+            ListHeaderComponent={
+              <View style={styles.actionHeader}>
                 <Pressable
-                  onPress={saveSelectedPlaces}
-                  style={styles.saveSelectedButton}>
-                  <Text style={styles.saveSelectedText}>보관함에 저장</Text>
+                  onPress={() => {
+                    setIsSelecting(!isSelecting);
+                    setSelectedPlaces([]);
+                  }}
+                  style={styles.selectButton}>
+                  {!isSelecting ? <SelectIcon /> : <></>}
+                  <Text style={styles.actionText}>
+                    {isSelecting ? '취소' : '선택'}
+                  </Text>
                 </Pressable>
-              )}
-            </View>
-          }
-          onEndReached={() => {
-            if (!isFetchingPlaces && placesCursorId !== null) {
-              setPlacesCursorId(placesCursorId);
+                {isSelecting && (
+                  <Pressable
+                    onPress={saveSelectedPlaces}
+                    style={styles.saveSelectedButton}>
+                    <Text style={styles.saveSelectedText}>보관함에 저장</Text>
+                  </Pressable>
+                )}
+              </View>
             }
-          }}
-          onEndReachedThreshold={0.5}
-        />
+            onEndReached={() => {
+              if (!isFetchingPlaces && placesCursorId !== null) {
+                setPlacesCursorId(placesCursorId);
+              }
+            }}
+            onEndReachedThreshold={0.5}
+          />
+        )}
 
         <Modal
           animationType="slide"
@@ -593,6 +610,12 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
             onPress={() => {
               setIsBottomSheetVisible(false);
               setSelectedFolderId(null);
+              navigation.replace('SpotSave', {
+                collectionId,
+                collectionContent,
+                collectionType,
+                disableAnimation: true,
+              });
             }}>
             <View style={styles.bottomSheet}>
               <View style={styles.bottomSheetContent}>
@@ -942,6 +965,27 @@ const styles = StyleSheet.create({
     color: '#A4A4A4',
     fontWeight: '500',
   },
+  emptyContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#121212',
+    marginTop: 16,
+  },
+  emptyDescription: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: '#A4A4A4',
+    marginTop: 8,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  
 });
 
 export default SpotSaveScreen;
