@@ -25,6 +25,7 @@ import {HomeStackParamList} from '../../types';
 import {AxiosError} from 'axios';
 import PlaceList from '../component/PlaceList';
 import {IPlace} from '../recoil/place/atom';
+import { useFocusEffect } from '@react-navigation/native';
 
 export type FolderPlaceListScreenProps = StackScreenProps<
   HomeStackParamList,
@@ -55,8 +56,8 @@ const FolderPlaceListScreen = ({
   const [cursorId, setCursorId] = useState<number | null>(0);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  const getSavedPlaces = useCallback(async () => {
-    if (isLoadingMore || cursorId === null) return;
+  const getSavedPlaces = useCallback(async (reset = false) => {
+    if (isLoadingMore || (!reset && cursorId === null)) return;
 
     try {
       setIsLoadingMore(true);
@@ -64,7 +65,7 @@ const FolderPlaceListScreen = ({
       const res = await API.get(`/folders/${folderId}/places-list`, {
         params: {
           take: 10,
-          cursorId: cursorId || 0,
+          cursorId: reset ? 0 : cursorId || 0,
           addressList: [],
           categoryList: [],
         },
@@ -89,19 +90,20 @@ const FolderPlaceListScreen = ({
       }));
       const meta = res.data.meta;
 
-      setSavedPlaces(prev => [...prev, ...data]);
+      setSavedPlaces(prev => (reset ? data : [...prev, ...data]));
       setCursorId(meta.hasNextPage ? meta.nextCursorId : null);
     } catch (error) {
       console.error('Error fetching saved places:', error);
-      Alert.alert('Error', 'An error occurred while fetching saved places.');
     } finally {
       setIsLoadingMore(false);
     }
   }, [cursorId, isLoadingMore, folderId]);
 
-  useEffect(() => {
-    getSavedPlaces();
-  }, [getSavedPlaces]);
+  useFocusEffect(
+    useCallback(() => {
+      getSavedPlaces(true);
+    }, [getSavedPlaces])
+  );
 
   const toggleSelection = (placeId: number) => {
     setSelectedPlaces(prevSelected =>
@@ -158,7 +160,7 @@ const FolderPlaceListScreen = ({
   const saveToSelectedFolder = async (folderId: number) => {
     try {
       if (selectedPlaces.length === 0) {
-        Alert.alert('Error', 'No places selected or invalid place ID.');
+        Alert.alert('최소 1개 이상의 장소를 선택해주세요.');
         return;
       }
       const validPlaceIds = selectedPlaces.filter(
@@ -316,7 +318,7 @@ const FolderPlaceListScreen = ({
             navigation.navigate('PlaceDetail', {placeId});
           }
         }}
-        loading={isLoadingMore}
+        loading={cursorId !== null && isLoadingMore}
         load={handleLoadMore}
       />
 
