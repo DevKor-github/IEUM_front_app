@@ -1,5 +1,6 @@
 import {
   ActivityIndicator,
+  Dimensions,
   FlatList,
   StyleSheet,
   Text,
@@ -11,6 +12,8 @@ import React from 'react';
 import ImageContainer from './ImageContainer';
 import CheckedSpot from '../assets/checked-spot.svg';
 import EmptySpot from '../assets/empty-circle.svg';
+
+const dWidth = Dimensions.get('window').width;
 
 export interface IPlaceList {
   placeList: IPlace[];
@@ -87,9 +90,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   gridContainer: {
+    width: dWidth - 48,
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    alignItems: 'flex-start',
   },
   card: {
     width: '49%',
