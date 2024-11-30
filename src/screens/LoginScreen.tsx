@@ -1,6 +1,7 @@
 import * as React from 'react';
 import {
   Alert,
+  Dimensions,
   Pressable,
   SafeAreaView,
   StyleSheet,
@@ -39,6 +40,9 @@ const consumerSecret = 'cFlKXu8OSY';
 const appName = 'IEUM';
 const serviceUrlScheme = 'naverLogin';
 
+const dWidth = Dimensions.get('window').width;
+const dHeight = Dimensions.get('window').height;
+
 const LoginScreen = ({navigation, route}: LoginScreenProps) => {
   //kakao
   const logInWithKakao = async () => {
@@ -58,6 +62,7 @@ const LoginScreen = ({navigation, route}: LoginScreenProps) => {
       await EncryptedStorage.setItem('uuid', res.data.uuid);
       await EncryptedStorage.setItem('accessToken', res.data.accessToken);
       await EncryptedStorage.setItem('refreshToken', res.data.refreshToken);
+      await EncryptedStorage.setItem('oAuthPlatform', 'kakao');
       navigation.navigate('Home');
     } else {
       console.log('Kakao 로그인 실패');
@@ -132,6 +137,7 @@ const LoginScreen = ({navigation, route}: LoginScreenProps) => {
       await EncryptedStorage.setItem('uuid', res.data.uuid);
       await EncryptedStorage.setItem('accessToken', res.data.accessToken);
       await EncryptedStorage.setItem('refreshToken', res.data.refreshToken);
+      await EncryptedStorage.setItem('oAuthPlatform', 'naver');
       navigation.navigate('Home');
     } else {
       console.log('Naver 로그인 실패');
@@ -200,6 +206,7 @@ const LoginScreen = ({navigation, route}: LoginScreenProps) => {
           await EncryptedStorage.setItem('uuid', res.data.uuid);
           await EncryptedStorage.setItem('accessToken', res.data.accessToken);
           await EncryptedStorage.setItem('refreshToken', res.data.refreshToken);
+          await EncryptedStorage.setItem('oAuthPlatform', 'apple');
           navigation.navigate('Home');
         } else {
           console.log('Apple 로그인 실패');
@@ -262,6 +269,7 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#FFFFFF',
+    height: dHeight,
   },
   container: {
     flex: 1,
