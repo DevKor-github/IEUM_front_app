@@ -299,6 +299,7 @@ const styles = StyleSheet.create({
   },
   folderGrid: {
     flexDirection: 'row',
+    width: dWidth,
     flexWrap: 'wrap',
     justifyContent: 'center',
     columnGap: 5,

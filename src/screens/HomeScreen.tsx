@@ -68,6 +68,15 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMoreData, setHasMoreData] = useState(true);
 
+  useFocusEffect(
+    useCallback(() => {
+      setSavedPlaces([]);
+      setCursorId(0);
+      setHasMoreData(true);
+      fetchSavedPlaces();
+    }, []),
+  );
+
   useEffect(() => {
     saveTokenToUserDefaults();
   }, []);
@@ -98,17 +107,22 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         },
       });
 
-      console.log(res);
-
       const data = res.data.items;
       const meta = res.data.meta;
 
-      setSavedPlaces(prev => [...prev, ...data]);
+      setSavedPlaces(prev => {
+        const updated = [...prev, ...data];
+        const uniquePlaces = updated.filter(
+          (item, index, self) =>
+            self.findIndex(p => p.id === item.id) === index,
+        );
+        return uniquePlaces;
+      });
+
       setCursorId(meta.hasNextPage ? meta.nextCursorId : null);
       setHasMoreData(meta.hasNextPage);
     } catch (error) {
       console.error('Error fetching saved places:', error);
-      Alert.alert('Error', 'An error occurred while fetching saved places.');
     } finally {
       setIsLoadingMore(false);
     }
@@ -127,6 +141,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
             params: {cursorId: cursorId},
           }),
         ]);
+
       if (profileRes.status === 200) {
         setUserName(profileRes.data.nickname);
       }
@@ -155,11 +170,14 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           totalViewedUnSavedPlaces -
           savedPlaces.length,
       );
-      fetchSavedPlaces();
+
+      await fetchSavedPlaces();
     } catch (err) {
       const error = err as AxiosError;
       if (error.response?.status === 401) {
         navigation.navigate('ServiceAgreement');
+      } else if (error.response?.status === 404) {
+        navigation.navigate('Login');
       } else {
         console.error('Error fetching data:', error);
         Alert.alert('Error', 'An error occurred while fetching data.');
@@ -246,7 +264,7 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
         <MainLogo />
-        <NotificationIcon />
+        {/* <NotificationIcon /> */}
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
@@ -256,8 +274,8 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
           <Pressable
             style={styles.editButton}
             onPress={() => navigation.navigate('ProfileEdit')}>
-            <EditIcon />
-            <Text style={styles.editText}>편집</Text>
+            {/* <EditIcon /> */}
+            <Text style={styles.editText}>내 정보</Text>
           </Pressable>
         </View>
         <Pressable
@@ -428,6 +446,7 @@ const styles = StyleSheet.create({
   },
   foldersContainer: {
     marginTop: 15,
+    width: dWidth - 48,
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'flex-start',

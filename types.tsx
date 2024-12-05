@@ -23,6 +23,7 @@ export type MapStackParamList = {
 
 export type HomeStackParamList = {
   Home: undefined;
+  Login: undefined;
   ServiceAgreement: undefined;
   ProfileEdit: undefined;
   LinkInput: undefined;
