@@ -89,8 +89,6 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
 
     // Indicate that states have been set
     setStatesReady(true);
-
-    console.log(categories);
   }, [categories, regions]); // Runs when `categories` changes
 
   // Another effect for calling `getPlaceList` once the states are updated

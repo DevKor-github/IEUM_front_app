@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {
+  ActivityIndicator,
   Alert,
   Dimensions,
   FlatList,
@@ -63,12 +64,16 @@ const PlaceDetailScreen = ({navigation, route}: PlaceDetailScreenProps) => {
   const [isSpotSaved, setIsSpotSaved] = useState(true);
   const [existingFolders, setExistingFolders] = useState<number[]>([]);
   const [collectionList, setCollectionList] = useState<ILinkCollection[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [cursor, setCursor] = useState<number>(-1);
+  const [hasNextPage, setHasNextPage] = useState<boolean>(true);
 
   useFocusEffect(() => {
     async function getDefaultId() {
       const res = await API.get('/folders/default');
       setDefaultId(res.data.id);
     }
+
     getDefaultId();
   });
 
@@ -82,6 +87,7 @@ const PlaceDetailScreen = ({navigation, route}: PlaceDetailScreenProps) => {
       const res = await API.get('/folders');
       setFolders(res.data.items);
     }
+
     getFolder();
   }, [navigation]);
 
@@ -132,8 +138,20 @@ const PlaceDetailScreen = ({navigation, route}: PlaceDetailScreenProps) => {
 
   const getReletedCollections = async () => {
     const {placeId} = route.params;
-    const res = await API.get(`/places/${placeId}/related-collections`);
-    setCollectionList(res.data.items);
+    const params = new URLSearchParams();
+    if (cursor > 0) {
+      // params = {...params, cursorId: cursor};
+      params.append('cursorId', cursor.toString());
+    }
+    const res = await API.get(
+      `/places/${placeId}/related-collections?${params.toString()}`,
+    );
+    const {items, meta} = res.data;
+    console.log(items);
+    console.log(meta);
+    setCollectionList(items);
+    setHasNextPage(meta.hasNextPage);
+    setCursor(meta.nextCursorId);
   };
 
   const fetchFoldersContainingPlace = async (placeId: number) => {
@@ -349,6 +367,41 @@ const PlaceDetailScreen = ({navigation, route}: PlaceDetailScreenProps) => {
     Linking.openURL(url);
   };
 
+  const loadMore = async () => {
+    if (isLoading || !hasNextPage) return;
+    setIsLoading(true);
+    await getReletedCollections();
+    setIsLoading(false);
+  };
+
+  const renderFooter = () => {
+    if (!isLoading) return null;
+    return (
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  };
+
+  const renderItem = ({item}: {item: ILinkCollection}) => (
+    <View style={styles.linkContainer}>
+      <View style={styles.linkIcon}>
+        {item.collectionType === 'INSTAGRAM' ? <InstaIcon /> : <NaverIcon />}
+      </View>
+      <View style={styles.linkInfo}>
+        <Text style={styles.linkTitle} numberOfLines={1} ellipsizeMode="tail">
+          {item.content}
+        </Text>
+        <Text style={styles.linkDate}>조회 {item.updatedAt}</Text>
+      </View>
+      <TouchableOpacity
+        style={styles.linkButton}
+        onPress={() => handleToGoLink(item.link)}>
+        <Text style={styles.linkButtonText}>바로가기</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   return (
     <ScrollView style={styles.container}>
       <ImageContainer
@@ -461,32 +514,40 @@ const PlaceDetailScreen = ({navigation, route}: PlaceDetailScreenProps) => {
           <Text style={[styles.sectionTitle, {marginTop: 28}]}>
             관련 게시글
           </Text>
-          {collectionList.map((link: ILinkCollection, index) => (
-            <View key={index} style={styles.linkContainer}>
-              {/*<Image source={{uri: link.icon}} style={styles.linkIcon} />*/}
-              <View style={styles.linkIcon}>
-                {link.collectionType === 'INSTAGRAM' ? (
-                  <InstaIcon />
-                ) : (
-                  <NaverIcon />
-                )}
-              </View>
-              <View style={styles.linkInfo}>
-                <Text
-                  style={styles.linkTitle}
-                  numberOfLines={1}
-                  ellipsizeMode="tail">
-                  {link.content}
-                </Text>
-                <Text style={styles.linkDate}>조회 {link.updatedAt}</Text>
-              </View>
-              <TouchableOpacity
-                style={styles.linkButton}
-                onPress={() => handleToGoLink(link.link)}>
-                <Text style={styles.linkButtonText}>바로가기</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
+          <FlatList
+            data={collectionList}
+            renderItem={renderItem}
+            keyExtractor={(item, index) => `${item.id}-${index}`}
+            onEndReached={loadMore}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={renderFooter}
+          />
+          {/*{collectionList.map((link: ILinkCollection, index) => (*/}
+          {/*  <View key={index} style={styles.linkContainer}>*/}
+          {/*    /!*<Image source={{uri: link.icon}} style={styles.linkIcon} />*!/*/}
+          {/*    <View style={styles.linkIcon}>*/}
+          {/*      {link.collectionType === 'INSTAGRAM' ? (*/}
+          {/*        <InstaIcon />*/}
+          {/*      ) : (*/}
+          {/*        <NaverIcon />*/}
+          {/*      )}*/}
+          {/*    </View>*/}
+          {/*    <View style={styles.linkInfo}>*/}
+          {/*      <Text*/}
+          {/*        style={styles.linkTitle}*/}
+          {/*        numberOfLines={1}*/}
+          {/*        ellipsizeMode="tail">*/}
+          {/*        {link.content}*/}
+          {/*      </Text>*/}
+          {/*      <Text style={styles.linkDate}>조회 {link.updatedAt}</Text>*/}
+          {/*    </View>*/}
+          {/*    <TouchableOpacity*/}
+          {/*      style={styles.linkButton}*/}
+          {/*      onPress={() => handleToGoLink(link.link)}>*/}
+          {/*      <Text style={styles.linkButtonText}>바로가기</Text>*/}
+          {/*    </TouchableOpacity>*/}
+          {/*  </View>*/}
+          {/*))}*/}
         </View>
 
         <Modal
@@ -797,6 +858,10 @@ const styles = StyleSheet.create({
   closeButtonText: {
     fontSize: 14,
     color: '#333',
+  },
+  loader: {
+    marginVertical: 20,
+    alignItems: 'center',
   },
 });
 
