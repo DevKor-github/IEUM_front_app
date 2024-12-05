@@ -51,8 +51,9 @@ const styles = StyleSheet.create({
   },
   overlayBackground: {
     ...StyleSheet.absoluteFillObject, // This makes the view cover the entire container
-    backgroundColor: '#00000052', // Semi-transparent gray
-    opacity: 0.3,
+    // backgroundColor: '#00000052', // Semi-transparent gray
+    backgroundColor: '#000', // Semi-transparent gray
+    opacity: 0.3, // todo 통일 필요
   },
   overlayContent: {
     ...StyleSheet.absoluteFillObject, // Also covers the entire container

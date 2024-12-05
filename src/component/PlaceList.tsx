@@ -2,10 +2,12 @@ import {
   ActivityIndicator,
   Dimensions,
   FlatList,
+  StyleProp,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  ViewStyle,
 } from 'react-native';
 import {IPlace} from '../recoil/place/atom';
 import React from 'react';
@@ -23,6 +25,7 @@ export interface IPlaceList {
   isSelecting?: boolean;
   selectedPlaces?: number[];
   toggleSelection?: (id: number) => void;
+  containerStyle?: StyleProp<ViewStyle>;
 }
 
 const PlaceList = (props: IPlaceList) => {
@@ -75,7 +78,10 @@ const PlaceList = (props: IPlaceList) => {
       data={props.placeList}
       renderItem={renderItem}
       keyExtractor={item => 'place_' + item.id.toString() + item.name}
-      contentContainerStyle={styles.bottomSheetScrollViewContent}
+      contentContainerStyle={[
+        styles.bottomSheetScrollViewContent,
+        props.containerStyle,
+      ]}
       numColumns={2}
       columnWrapperStyle={styles.gridContainer}
       onEndReached={props.load}

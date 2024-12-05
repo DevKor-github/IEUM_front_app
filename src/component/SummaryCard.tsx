@@ -78,10 +78,12 @@ const SummaryCard = (props: ISummaryCardProps) => {
           <View style={styles.bookmarkIcon}>
             <BookmarkIcon />
           </View>
-          <Text style={styles.placeCardTitle}>{placeInfo.name}</Text>
-          <Text style={styles.placeCardLocation}>
-            {placeInfo.simplifiedAddress}
-          </Text>
+          <View>
+            <Text style={styles.placeCardTitle}>{placeInfo.name}</Text>
+            <Text style={styles.placeCardLocation}>
+              {placeInfo.simplifiedAddress}
+            </Text>
+          </View>
           <Text style={styles.placeCardTags}>
             <HashTags hashtags={placeInfo.hashTags} />
           </Text>
@@ -170,7 +172,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '400',
     color: '#777',
-    marginBottom: 18,
+    marginBottom: 13,
   },
   placeCardTags: {
     fontSize: 14,

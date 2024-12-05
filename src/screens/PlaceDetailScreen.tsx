@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {
+  ActivityIndicator,
   Alert,
   Dimensions,
   FlatList,
@@ -31,7 +32,6 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import HashTags from '../component/HashTags';
 import ImageContainer from '../component/ImageContainer';
 import SpotUnSaveIcon from '../assets/bookmark-non-selected-icon.svg';
-import SpotSaveIcon from '../assets/bookmark-selected-icon.svg';
 import SavedPlaceNum from '../assets/saved-place-num.svg';
 import CheckedSpot from '../assets/checked-spot.svg';
 import PlusIcon from '../assets/place-plus-icon.svg';
@@ -57,24 +57,29 @@ const PlaceDetailScreen = ({navigation, route}: PlaceDetailScreenProps) => {
   const [placeConveniences, setPlaceConveniences] = useState<
     PlaceConvenience[]
   >([]);
-  const [isSaved, setIsSaved] = useState(true);
   const [isBottomSheetVisible, setIsBottomSheetVisible] = useState(false);
   const [folders, setFolders] = useState<any[]>([]);
   const [defaultId, setDefaultId] = useState(0);
   const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null);
   const [isSpotSaved, setIsSpotSaved] = useState(true);
   const [existingFolders, setExistingFolders] = useState<number[]>([]);
+  const [collectionList, setCollectionList] = useState<ILinkCollection[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [cursor, setCursor] = useState<number>(-1);
+  const [hasNextPage, setHasNextPage] = useState<boolean>(true);
 
   useFocusEffect(() => {
     async function getDefaultId() {
       const res = await API.get('/folders/default');
       setDefaultId(res.data.id);
     }
+
     getDefaultId();
   });
 
   useEffect(() => {
     getPlaceDetail();
+    getReletedCollections();
   }, []);
 
   useEffect(() => {
@@ -82,6 +87,7 @@ const PlaceDetailScreen = ({navigation, route}: PlaceDetailScreenProps) => {
       const res = await API.get('/folders');
       setFolders(res.data.items);
     }
+
     getFolder();
   }, [navigation]);
 
@@ -128,6 +134,24 @@ const PlaceDetailScreen = ({navigation, route}: PlaceDetailScreenProps) => {
     }
     setPlaceConveniences(tempPlaceConveniences);
     setPlaceDetails(tempPlaceInfo);
+  };
+
+  const getReletedCollections = async () => {
+    const {placeId} = route.params;
+    const params = new URLSearchParams();
+    if (cursor > 0) {
+      // params = {...params, cursorId: cursor};
+      params.append('cursorId', cursor.toString());
+    }
+    const res = await API.get(
+      `/places/${placeId}/related-collections?${params.toString()}`,
+    );
+    const {items, meta} = res.data;
+    console.log(items);
+    console.log(meta);
+    setCollectionList(items);
+    setHasNextPage(meta.hasNextPage);
+    setCursor(meta.nextCursorId);
   };
 
   const fetchFoldersContainingPlace = async (placeId: number) => {
@@ -343,6 +367,41 @@ const PlaceDetailScreen = ({navigation, route}: PlaceDetailScreenProps) => {
     Linking.openURL(url);
   };
 
+  const loadMore = async () => {
+    if (isLoading || !hasNextPage) return;
+    setIsLoading(true);
+    await getReletedCollections();
+    setIsLoading(false);
+  };
+
+  const renderFooter = () => {
+    if (!isLoading) return null;
+    return (
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  };
+
+  const renderItem = ({item}: {item: ILinkCollection}) => (
+    <View style={styles.linkContainer}>
+      <View style={styles.linkIcon}>
+        {item.collectionType === 'INSTAGRAM' ? <InstaIcon /> : <NaverIcon />}
+      </View>
+      <View style={styles.linkInfo}>
+        <Text style={styles.linkTitle} numberOfLines={1} ellipsizeMode="tail">
+          {item.content}
+        </Text>
+        <Text style={styles.linkDate}>조회 {item.updatedAt}</Text>
+      </View>
+      <TouchableOpacity
+        style={styles.linkButton}
+        onPress={() => handleToGoLink(item.link)}>
+        <Text style={styles.linkButtonText}>바로가기</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   return (
     <ScrollView style={styles.container}>
       <ImageContainer
@@ -419,8 +478,8 @@ const PlaceDetailScreen = ({navigation, route}: PlaceDetailScreenProps) => {
           </View>
         </View>
 
-        {/* 내가 확인한 링크 섹션 */}
         <View style={styles.section}>
+          {/* 내가 확인한 링크 섹션 */}
           <Text style={styles.sectionTitle}>내가 확인한 링크</Text>
           {placeDetails?.linkedCollections.map(
             (link: ILinkCollection, index) => (
@@ -450,7 +509,47 @@ const PlaceDetailScreen = ({navigation, route}: PlaceDetailScreenProps) => {
               </View>
             ),
           )}
+
+          {/* 다른 사람 확인한 링크 섹션 */}
+          <Text style={[styles.sectionTitle, {marginTop: 28}]}>
+            관련 게시글
+          </Text>
+          <FlatList
+            data={collectionList}
+            renderItem={renderItem}
+            keyExtractor={(item, index) => `${item.id}-${index}`}
+            onEndReached={loadMore}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={renderFooter}
+          />
+          {/*{collectionList.map((link: ILinkCollection, index) => (*/}
+          {/*  <View key={index} style={styles.linkContainer}>*/}
+          {/*    /!*<Image source={{uri: link.icon}} style={styles.linkIcon} />*!/*/}
+          {/*    <View style={styles.linkIcon}>*/}
+          {/*      {link.collectionType === 'INSTAGRAM' ? (*/}
+          {/*        <InstaIcon />*/}
+          {/*      ) : (*/}
+          {/*        <NaverIcon />*/}
+          {/*      )}*/}
+          {/*    </View>*/}
+          {/*    <View style={styles.linkInfo}>*/}
+          {/*      <Text*/}
+          {/*        style={styles.linkTitle}*/}
+          {/*        numberOfLines={1}*/}
+          {/*        ellipsizeMode="tail">*/}
+          {/*        {link.content}*/}
+          {/*      </Text>*/}
+          {/*      <Text style={styles.linkDate}>조회 {link.updatedAt}</Text>*/}
+          {/*    </View>*/}
+          {/*    <TouchableOpacity*/}
+          {/*      style={styles.linkButton}*/}
+          {/*      onPress={() => handleToGoLink(link.link)}>*/}
+          {/*      <Text style={styles.linkButtonText}>바로가기</Text>*/}
+          {/*    </TouchableOpacity>*/}
+          {/*  </View>*/}
+          {/*))}*/}
         </View>
+
         <Modal
           animationType="slide"
           transparent={true}
@@ -759,6 +858,10 @@ const styles = StyleSheet.create({
   closeButtonText: {
     fontSize: 14,
     color: '#333',
+  },
+  loader: {
+    marginVertical: 20,
+    alignItems: 'center',
   },
 });
 

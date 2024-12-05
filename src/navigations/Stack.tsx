@@ -44,7 +44,7 @@ import ActiveTravelTabIcon from '../assets/active-travel-tab-icon.svg';
 import BackButton from '../assets/back-button.svg';
 import PlaceDetailScreen from '../screens/PlaceDetailScreen';
 import type {HeaderBackButton} from '@react-navigation/elements';
-import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
+import {getFocusedRouteNameFromRoute} from '@react-navigation/native';
 
 const RootStack = createStackNavigator<RootStackParamList>();
 const MapStack = createStackNavigator<MapStackParamList>();
@@ -64,13 +64,15 @@ const renderBackButton = (): React.ComponentProps<any> => {
   return <BackButton style={{marginLeft: 24}} />;
 };
 
-import { BottomTabNavigationOptions } from "@react-navigation/bottom-tabs";
+import {BottomTabNavigationOptions} from '@react-navigation/bottom-tabs';
 
-const getTabBarStyle = (route: any): BottomTabNavigationOptions['tabBarStyle'] => {
+const getTabBarStyle = (
+  route: any,
+): BottomTabNavigationOptions['tabBarStyle'] => {
   const routeName = getFocusedRouteNameFromRoute(route) ?? 'Home';
   const hiddenRoutes = ['Login', 'ServiceAgreement'];
   if (hiddenRoutes.includes(routeName)) {
-    return { display: 'none' };
+    return {display: 'none'};
   }
   return undefined;
 };
@@ -122,19 +124,19 @@ function TabNavigation() {
       <Tab.Screen
         name="HomeTab"
         component={HStack}
-        options={({ route }) => ({
+        options={({route}) => ({
           title: '홈',
           headerShown: false,
           tabBarStyle: getTabBarStyle(route),
         })}
       />
-      <Tab.Screen
-        name="TravelTab"
-        component={TStack}
-        options={{
-          title: '여행 만들기',
-        }}
-      />
+      {/*<Tab.Screen*/}
+      {/*  name="TravelTab"*/}
+      {/*  component={TStack}*/}
+      {/*  options={{*/}
+      {/*    title: '여행 만들기',*/}
+      {/*  }}*/}
+      {/*/>*/}
     </Tab.Navigator>
   );
 }
@@ -165,10 +167,7 @@ const HStack = () => {
       initialRouteName="Home"
       screenOptions={{headerShown: false}}>
       <HomeStack.Screen name="Home" component={HomeScreen} />
-      <HomeStack.Screen
-        name="Login"
-        component={StackNavigation}
-      />
+      <HomeStack.Screen name="Login" component={StackNavigation} />
       <HomeStack.Screen name="LinkInput" component={LinkInputScreen} />
       <HomeStack.Screen name="LinkReject" component={LinkRejectScreen} />
       <HomeStack.Screen name="ProfileEdit" component={ProfileEditScreen} />

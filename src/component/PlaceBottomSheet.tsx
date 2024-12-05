@@ -89,8 +89,6 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
 
     // Indicate that states have been set
     setStatesReady(true);
-
-    console.log(categories);
   }, [categories, regions]); // Runs when `categories` changes
 
   // Another effect for calling `getPlaceList` once the states are updated
@@ -483,12 +481,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 10,
     width: 1000,
+    height: 70,
   },
   itemImage: {
     marginRight: 10,
   },
   itemTextContainer: {
-    flex: 1,
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'flex-end',
   },
   itemTitle: {
     fontSize: 16,
@@ -498,6 +500,7 @@ const styles = StyleSheet.create({
   itemSubtitleContainer: {
     display: 'flex',
     flexDirection: 'row',
+    alignItems: 'center',
   },
   itemSubtitle: {
     fontSize: 14,
