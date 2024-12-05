@@ -562,7 +562,7 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
         ) : (
           <FlatList
             data={places}
-            extraData={{ places, savedPlaces }}
+            extraData={{places, savedPlaces}}
             contentContainerStyle={styles.flatListContent}
             keyExtractor={item => item.placeId.toString()}
             renderItem={renderPlaceItem}
@@ -951,19 +951,29 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontWeight: '700',
   },
+  // savedLabelContainer: {
+  //   paddingVertical: 5,
+  //   paddingHorizontal: 10,
+  //   backgroundColor: '#EFEFEF',
+  //   borderRadius: 4,
+  //   alignSelf: 'center',
+  //   justifyContent: 'center',
+  //   alignItems: 'center',
+  // },
   savedLabelContainer: {
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    backgroundColor: '#EFEFEF',
+    flexDirection: 'row',
+    width: 105,
+    height: 32,
+    backgroundColor: '#F0F1F1',
     borderRadius: 4,
-    alignSelf: 'center',
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
   },
   savedLabelText: {
     fontSize: 12,
     color: '#A4A4A4',
-    fontWeight: '500',
+    fontWeight: '700',
   },
   emptyContainer: {
     flex: 1,
@@ -985,7 +995,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
   },
-  
 });
 
 export default SpotSaveScreen;
