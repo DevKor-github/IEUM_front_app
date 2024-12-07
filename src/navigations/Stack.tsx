@@ -81,7 +81,7 @@ function TabNavigation() {
   return (
     <Tab.Navigator
       initialRouteName="HomeTab"
-      screenOptions={({route}) => ({
+      screenOptions={({ route }) => ({
         tabBarStyle: {height: 85},
         tabBarShowLabel: true,
         tabBarActiveTintColor: '#FF5570',
@@ -145,7 +145,7 @@ const MStack = () => {
   return (
     <MapStack.Navigator
       initialRouteName="Map"
-      screenOptions={{headerShown: false}}>
+      screenOptions={{headerShown: false, gestureEnabled: false}}>
       <MapStack.Screen name="Map" component={MapScreen} />
       <MapStack.Screen
         name="PlaceDetail"
@@ -165,7 +165,7 @@ const HStack = () => {
   return (
     <HomeStack.Navigator
       initialRouteName="Home"
-      screenOptions={{headerShown: false}}>
+      screenOptions={{headerShown: false, gestureEnabled: false}}>
       <HomeStack.Screen name="Home" component={HomeScreen} />
       <HomeStack.Screen name="Login" component={StackNavigation} />
       <HomeStack.Screen name="LinkInput" component={LinkInputScreen} />
@@ -258,7 +258,7 @@ const StackNavigation = () => {
   return (
     <RootStack.Navigator
       initialRouteName="Login"
-      screenOptions={{headerShown: false}}>
+      screenOptions={{ headerShown: false, gestureEnabled: false}}>
       <RootStack.Screen name="Login" component={LoginScreen} />
       <RootStack.Screen name="Home" component={TabNavigation} />
       <RootStack.Screen
