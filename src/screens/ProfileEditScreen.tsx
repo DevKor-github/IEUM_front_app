@@ -46,46 +46,74 @@ const ProfileEditScreen = ({navigation, route}: ProfileEditScreenProps) => {
   }, []);
 
   const handleWithdraw = async () => {
-    try {
-      const res = await API.delete('/users/me');
-      if (res.status === 200) {
-        Alert.alert('회원 탈퇴', '회원 탈퇴가 완료되었습니다.', [
-          {text: '확인', onPress: () => navigation.replace('Login')},
-        ]);
-      }
-    } catch (err) {
-      console.error('회원 탈퇴 오류:', err);
-      Alert.alert('오류', '회원 탈퇴 중 문제가 발생했습니다.');
-    }
+    Alert.alert(
+      '회원 탈퇴',
+      '회원 탈퇴를 진행하시겠습니까?',
+      [
+        {text: '취소', style: 'cancel'},
+        {
+          text: '확인',
+          onPress: async () => {
+            try {
+              const res = await API.delete('/users/me');
+              if (res.status === 200) {
+                Alert.alert('회원 탈퇴', '회원 탈퇴가 완료되었습니다.', [
+                  {text: '확인', onPress: () => navigation.replace('Login')},
+                ]);
+              }
+            } catch (err) {
+              console.error('회원 탈퇴 오류:', err);
+              Alert.alert('오류', '회원 탈퇴 중 문제가 발생했습니다.');
+            }
+          },
+        },
+      ],
+      {cancelable: true},
+    );
   };
 
   const handleLogout = async () => {
-    try {
-      const socialLoginType = await EncryptedStorage.getItem('oAuthPlatform');
+    Alert.alert(
+      '로그아웃',
+      '로그아웃 하시겠습니까?',
+      [
+        {text: '취소', style: 'cancel'},
+        {
+          text: '확인',
+          onPress: async () => {
+            try {
+              const socialLoginType = await EncryptedStorage.getItem(
+                'oAuthPlatform',
+              );
 
-      switch (socialLoginType) {
-        case 'kakao':
-          await handleKakaoLogout();
-          break;
-        case 'naver':
-          await handleNaverLogout();
-          break;
-        case 'apple':
-          await handleAppleLogout();
-          break;
-        default:
-          Alert.alert('오류', '알 수 없는 로그인 타입입니다.');
-          return;
-      }
+              switch (socialLoginType) {
+                case 'kakao':
+                  await handleKakaoLogout();
+                  break;
+                case 'naver':
+                  await handleNaverLogout();
+                  break;
+                case 'apple':
+                  await handleAppleLogout();
+                  break;
+                default:
+                  Alert.alert('오류', '알 수 없는 로그인 타입입니다.');
+                  return;
+              }
 
-      await EncryptedStorage.clear();
-      Alert.alert('로그아웃', '로그아웃이 완료되었습니다.', [
-        {text: '확인', onPress: () => navigation.replace('Login')},
-      ]);
-    } catch (err) {
-      console.error('로그아웃 오류:', err);
-      Alert.alert('오류', '로그아웃 중 문제가 발생했습니다.');
-    }
+              await EncryptedStorage.clear();
+              Alert.alert('로그아웃', '로그아웃이 완료되었습니다.', [
+                {text: '확인', onPress: () => navigation.replace('Login')},
+              ]);
+            } catch (err) {
+              console.error('로그아웃 오류:', err);
+              Alert.alert('오류', '로그아웃 중 문제가 발생했습니다.');
+            }
+          },
+        },
+      ],
+      {cancelable: true},
+    );
   };
 
   const handleKakaoLogout = async () => {
