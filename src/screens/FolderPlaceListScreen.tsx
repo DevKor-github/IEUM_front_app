@@ -167,7 +167,6 @@ const FolderPlaceListScreen = ({
         id => id !== null && id !== undefined,
       );
       if (validPlaceIds.length === 0) {
-        Alert.alert('Error', 'Invalid place IDs.');
         return;
       }
       const requestBody = {
@@ -180,7 +179,6 @@ const FolderPlaceListScreen = ({
       setIsSelecting(false);
     } catch (error) {
       console.error('Error saving to folder:', error);
-      Alert.alert('Error', 'An error occurred while saving the place.');
     }
   };
 
@@ -190,7 +188,6 @@ const FolderPlaceListScreen = ({
       setFolders(res.data.items);
     } catch (error) {
       console.error('Error fetching folders:', error);
-      Alert.alert('Error', 'An error occurred while fetching folders.');
     }
   }, []);
 

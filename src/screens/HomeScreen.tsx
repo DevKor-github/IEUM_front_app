@@ -180,7 +180,6 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
         navigation.navigate('Login');
       } else {
         console.error('Error fetching data:', error);
-        Alert.alert('Error', 'An error occurred while fetching data.');
       }
     }
   }, [fetchSavedPlaces, savedPlaces.length]);
