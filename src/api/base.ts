@@ -38,7 +38,7 @@ API.interceptors.response.use(
   error => {
     // 에러를 그대로 전달합니다.
     const {status, data} = error.response;
-    Alert.alert('오류', data.message);
+    // Alert.alert('오류', data.message);
     return Promise.reject(error);
   },
 );

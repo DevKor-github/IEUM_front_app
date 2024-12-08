@@ -135,7 +135,7 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
       });
     } catch (error) {
       console.error('Error unsaving spot:', error);
-      Alert.alert('Error', 'An error occurred while unsaving the place.');
+      Alert.alert('오류', '저장 취소 중 문제가 발생했습니다.');
     }
   };
 
@@ -163,7 +163,7 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
         setSavedPlacesCursorId(meta.hasNextPage ? meta.nextCursorId : null);
       } catch (error) {
         console.error('Error fetching saved places:', error);
-        Alert.alert('Error', 'An error occurred while fetching saved places.');
+        Alert.alert('오류', '저장된 장소를 가져오던 중 문제가 발생했습니다.');
       } finally {
         setIsFetchingSavedPlaces(false);
       }
@@ -205,7 +205,7 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
         setPlacesCursorId(meta.hasNextPage ? meta.nextCursorId : null);
       } catch (error) {
         console.error('Error fetching places:', error);
-        Alert.alert('Error', 'An error occurred while fetching places.');
+        Alert.alert('오류', '장소를 가져오던 중 문제가 발생했습니다.');
       } finally {
         setIsFetchingPlaces(false);
       }
@@ -268,7 +268,7 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
       setIsBottomSheetVisible(true);
     } catch (error) {
       console.error('Error saving places:', error);
-      Alert.alert('Error', 'An error occurred while saving selected places.');
+      Alert.alert('오류', '장소를 저장하던 중 문제가 발생했습니다.');
     }
   };
 
@@ -288,21 +288,19 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
       setIsBottomSheetVisible(true);
     } catch (error) {
       console.error('Error saving places:', error);
-      Alert.alert('Error', 'An error occurred while saving selected places.');
+      Alert.alert('오류', '장소를 저장하던 중 문제가 발생했습니다.');
     }
   };
 
   const saveToSelectedFolder = async (folderId: number) => {
     try {
       if (selectedPlaces.length === 0) {
-        Alert.alert('Error', 'No places selected or invalid place ID.');
         return;
       }
       const validPlaceIds = selectedPlaces.filter(
         id => id !== null && id !== undefined,
       );
       if (validPlaceIds.length === 0) {
-        Alert.alert('Error', 'Invalid place IDs.');
         return;
       }
       const requestBody = {
@@ -329,7 +327,7 @@ const SpotSaveScreen: React.FC<SpotSaveScreenProps> = ({navigation, route}) => {
       setIsSelecting(false);
     } catch (error) {
       console.error('Error saving to folder:', error);
-      Alert.alert('Error', 'An error occurred while saving the place.');
+      Alert.alert('오류', '장소 저장 중 문제가 발생했습니다.');
     }
   };
 

@@ -186,7 +186,7 @@ const PlaceDetailScreen = ({navigation, route}: PlaceDetailScreenProps) => {
       setIsBottomSheetVisible(false);
     } catch (error) {
       console.error('Error unsaving spot:', error);
-      Alert.alert('Error', 'An error occurred while unsaving the place.');
+      Alert.alert('오류', '장소 저장 중 오류가 발생했습니다.');
     }
   };
 
@@ -201,7 +201,7 @@ const PlaceDetailScreen = ({navigation, route}: PlaceDetailScreenProps) => {
       setSelectedFolderId(null);
     } catch (error) {
       console.error('Error saving to folder:', error);
-      Alert.alert('Error', 'An error occurred while saving the place.');
+      Alert.alert('오류', '장소 저장 중 오류가 발생했습니다.');
     }
   };
 
@@ -354,7 +354,7 @@ const PlaceDetailScreen = ({navigation, route}: PlaceDetailScreenProps) => {
       })
       .catch(err => {
         console.log(err);
-        Alert.alert('Error', '카카오 지도 앱을 열 수 없습니다.');
+        Alert.alert('오류', '카카오 지도 앱을 열 수 없습니다.');
       });
   };
 
