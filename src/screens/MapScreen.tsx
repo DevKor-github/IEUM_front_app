@@ -45,6 +45,7 @@ import {API} from '../api/base';
 import markerAtom, {IMarker} from '../recoil/marker/atom';
 import {Regions} from '../recoil/region/atom';
 import SummaryCard from '../component/SummaryCard';
+import {useFocusEffect} from '@react-navigation/native';
 
 export type MapScreenProps = StackScreenProps<MapStackParamList, 'Map'>;
 
@@ -65,9 +66,11 @@ const MapScreen = ({navigation, route}: MapScreenProps) => {
   const [isOpenFilterModal, setIsOpenFilterModal] = useState(false);
   const [initialLocation, setInitialLocation] = useState({});
 
-  useEffect(() => {
-    getMarkerList(categories, regions);
-  }, [categories, regions]);
+  useFocusEffect(
+    useCallback(() => {
+      getMarkerList(categories, regions);
+    }, [categories, regions]),
+  );
 
   const getMarkerList = async (
     categoryList: Categories[] = [],

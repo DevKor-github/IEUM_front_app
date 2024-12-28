@@ -26,9 +26,11 @@ export interface IPlaceList {
   selectedPlaces?: number[];
   toggleSelection?: (id: number) => void;
   containerStyle?: StyleProp<ViewStyle>;
+  scrollEnabled?: boolean;
 }
 
 const PlaceList = (props: IPlaceList) => {
+  const {scrollEnabled = true} = props;
   const renderItem = ({item}: {item: IPlace}) => (
     <TouchableOpacity
       onPress={() =>
@@ -87,6 +89,7 @@ const PlaceList = (props: IPlaceList) => {
       onEndReached={props.load}
       onEndReachedThreshold={0.5}
       ListFooterComponent={renderFooter}
+      scrollEnabled={scrollEnabled}
     />
   );
 };

@@ -27,6 +27,7 @@ import regionAtom from '../recoil/region';
 import {Regions} from '../recoil/region/atom';
 import {API} from '../api/base';
 import ImageContainer from './ImageContainer';
+import {useFocusEffect} from '@react-navigation/native';
 
 export interface IPlaceBottomSheet {
   bottomSheetModalRef: React.RefObject<BottomSheetModal>;
@@ -81,15 +82,17 @@ const PlaceBottomSheet = (props: IPlaceBottomSheet) => {
     // getPlaceList();
     getFolderList();
   }, []);
-  useEffect(() => {
-    // Reset the states
-    setHasNextPage(true);
-    setCursor(-1);
-    setPlaces([]);
+  useFocusEffect(
+    useCallback(() => {
+      // Reset the states
+      setHasNextPage(true);
+      setCursor(-1);
+      setPlaces([]);
 
-    // Indicate that states have been set
-    setStatesReady(true);
-  }, [categories, regions]); // Runs when `categories` changes
+      // Indicate that states have been set
+      setStatesReady(true);
+    }, [categories, regions]),
+  ); // Runs when `categories` changes
 
   // Another effect for calling `getPlaceList` once the states are updated
   useEffect(() => {
