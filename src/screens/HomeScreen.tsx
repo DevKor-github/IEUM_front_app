@@ -249,13 +249,16 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
       };
     });
     return (
-      <PlaceList
-        placeList={placeItems}
-        onPress={() => navigation.navigate('PlaceList')}
-        loading={false}
-        load={() => {}}
-        containerStyle={{paddingHorizontal: 0}}
-      />
+      <View style={{height: 550}}>
+        <PlaceList
+          placeList={placeItems}
+          onPress={() => navigation.navigate('PlaceList')}
+          loading={false}
+          load={() => {}}
+          containerStyle={{paddingHorizontal: 0}}
+          scrollEnabled={false}
+        />
+      </View>
     );
   };
 
@@ -311,7 +314,12 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
 
         <View style={{width: dWidth, height: 12, backgroundColor: '#F8F8F8'}} />
 
-        <View style={{marginTop: 30, width: dWidth - 48, alignItems: 'center'}}>
+        <View
+          style={{
+            marginTop: 30,
+            width: dWidth - 48,
+            alignItems: 'center',
+          }}>
           <Text
             style={{
               fontSize: 18,
@@ -325,19 +333,20 @@ const HomeScreen = ({navigation}: HomeScreenProps) => {
             {renderPlaces()}
           </Pressable>
           <Pressable
-            style={{
-              width: 172,
-              height: 40,
-              borderColor: '#D9D9D9',
-              borderWidth: 1,
-              borderRadius: 2,
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginTop: 25,
-              marginBottom: 25,
-            }}
+            // style={{
+            //   width: 172,
+            //   height: 40,
+            //   borderColor: '#D9D9D9',
+            //   borderWidth: 1,
+            //   borderRadius: 2,
+            //   alignItems: 'center',
+            //   justifyContent: 'center',
+            //   marginTop: 25,
+            //   marginBottom: 25,
+            // }}
+            style={styles.viewAllButton}
             onPress={() => navigation.navigate('PlaceList')}>
-            <Text style={{fontSize: 15, fontWeight: '600'}}>전체보기</Text>
+            <Text style={styles.viewAllButtonText}>전체보기</Text>
           </Pressable>
         </View>
       </ScrollView>
