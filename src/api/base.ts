@@ -1,7 +1,7 @@
 import axios from 'axios';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import {Alert} from 'react-native';
-export const API_URL = 'https://dev.api.ieum.devkor.club/';
+export const API_URL = 'https://api.ieum.devkor.club/';
 
 /* axios 공통 config */
 export const API = axios.create({
