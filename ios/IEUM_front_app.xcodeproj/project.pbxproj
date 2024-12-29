@@ -597,20 +597,20 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = IEUM_front_app/IEUM_front_app.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = SA9884Z46P;
+				DEVELOPMENT_TEAM = A39239TVDW;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = IEUM_front_app/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.5;
+				MARKETING_VERSION = 1.0.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = club.devkor.ieum.api;
+				PRODUCT_BUNDLE_IDENTIFIER = club.devkor.ieum;
 				PRODUCT_NAME = IEUM_front_app;
 				SWIFT_OBJC_BRIDGING_HEADER = "IEUM_front_app-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -628,19 +628,19 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = IEUM_front_app/IEUM_front_app.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = SA9884Z46P;
+				DEVELOPMENT_TEAM = A39239TVDW;
 				INFOPLIST_FILE = IEUM_front_app/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.5;
+				MARKETING_VERSION = 1.0.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = club.devkor.ieum.api;
+				PRODUCT_BUNDLE_IDENTIFIER = club.devkor.ieum;
 				PRODUCT_NAME = IEUM_front_app;
 				SWIFT_OBJC_BRIDGING_HEADER = "IEUM_front_app-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
@@ -662,7 +662,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = SA9884Z46P;
+				DEVELOPMENT_TEAM = A39239TVDW;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -679,7 +679,7 @@
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = "club.devkor.ieum.api.ieum-share";
+				PRODUCT_BUNDLE_IDENTIFIER = "club.devkor.ieum.ieum-share";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
@@ -705,7 +705,7 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = SA9884Z46P;
+				DEVELOPMENT_TEAM = A39239TVDW;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -721,7 +721,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = "club.devkor.ieum.api.ieum-share";
+				PRODUCT_BUNDLE_IDENTIFIER = "club.devkor.ieum.ieum-share";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
