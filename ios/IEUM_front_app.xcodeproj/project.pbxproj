@@ -15,7 +15,7 @@
 		290EDD15AFB3B1CC10842D8D /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B10F27BFCEC910CE7863DC49 /* PrivacyInfo.xcprivacy */; };
 		698AC4732CAE92A0000AF5D3 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 698AC4722CAE92A0000AF5D3 /* ShareViewController.swift */; };
 		698AC4762CAE92A0000AF5D3 /* Base in Resources */ = {isa = PBXBuildFile; fileRef = 698AC4752CAE92A0000AF5D3 /* Base */; };
-		698AC47A2CAE92A0000AF5D3 /* ieum-share.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 698AC4702CAE92A0000AF5D3 /* ieum-share.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		698AC47A2CAE92A0000AF5D3 /* ieum-share.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 698AC4702CAE92A0000AF5D3 /* ieum-share.appex */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		698AC4812CAE9AB4000AF5D3 /* SharedDataModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 698AC4802CAE9AB4000AF5D3 /* SharedDataModule.m */; };
 		698AC4832CAE9B1B000AF5D3 /* SharedDataModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 698AC4822CAE9B1B000AF5D3 /* SharedDataModule.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
@@ -81,6 +81,7 @@
 		950A14722C52EE8D00A9FD58 /* IEUM_front_app-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "IEUM_front_app-Bridging-Header.h"; sourceTree = "<group>"; };
 		950A14732C52EE8E00A9FD58 /* SwiftBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftBridge.swift; sourceTree = "<group>"; };
 		950A14752C56772100A9FD58 /* IEUM_front_app.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = IEUM_front_app.entitlements; path = IEUM_front_app/IEUM_front_app.entitlements; sourceTree = "<group>"; };
+		957B77802D380A0500414C5E /* IEUM_front_appRelease.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = IEUM_front_appRelease.entitlements; path = IEUM_front_app/IEUM_front_appRelease.entitlements; sourceTree = "<group>"; };
 		B10F27BFCEC910CE7863DC49 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = IEUM_front_app/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		B5CF0FA75594E6035112DECB /* Pods-IEUM_front_app.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-IEUM_front_app.debug.xcconfig"; path = "Target Support Files/Pods-IEUM_front_app/Pods-IEUM_front_app.debug.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
@@ -133,6 +134,7 @@
 		13B07FAE1A68108700A75B9A /* IEUM_front_app */ = {
 			isa = PBXGroup;
 			children = (
+				957B77802D380A0500414C5E /* IEUM_front_appRelease.entitlements */,
 				950A14752C56772100A9FD58 /* IEUM_front_app.entitlements */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.mm */,
@@ -518,6 +520,7 @@
 		};
 		698AC4792CAE92A0000AF5D3 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
+			platformFilter = ios;
 			target = 698AC46F2CAE92A0000AF5D3 /* ieum-share */;
 			targetProxy = 698AC4782CAE92A0000AF5D3 /* PBXContainerItemProxy */;
 		};
@@ -596,10 +599,13 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = IEUM_front_app/IEUM_front_app.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = A39239TVDW;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = IEUM_front_app/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = IEUM;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -612,9 +618,15 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = club.devkor.ieum;
 				PRODUCT_NAME = IEUM_front_app;
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "IEUM_front_app-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Debug;
@@ -626,10 +638,13 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = IEUM_front_app/IEUM_front_app.entitlements;
+				CODE_SIGN_ENTITLEMENTS = IEUM_front_app/IEUM_front_appRelease.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = A39239TVDW;
 				INFOPLIST_FILE = IEUM_front_app/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = IEUM;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -642,8 +657,14 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = club.devkor.ieum;
 				PRODUCT_NAME = IEUM_front_app;
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "IEUM_front_app-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Release;
@@ -682,6 +703,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "club.devkor.ieum.ieum-share";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -724,6 +746,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "club.devkor.ieum.ieum-share";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
