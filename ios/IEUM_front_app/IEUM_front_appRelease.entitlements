@@ -6,10 +6,5 @@
 	<array>
 		<string>Default</string>
 	</array>
-	<key>com.apple.security.application-groups</key>
-	<array>
-		<string>group.club.devkor.ieum</string>
-	</array>
-	<array/>
 </dict>
 </plist>
